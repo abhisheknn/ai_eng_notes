@@ -1,0 +1,421 @@
+## Day 1 — Next Concept: Logits → Probabilities → Sampling
+
+Now that you understand **temperature** and **Top-P**, let's go one level deeper.
+
+The key question is:
+
+> **How does an LLM actually decide what the next token should be?**
+
+---
+
+# 1. The model doesn't directly output words
+
+Suppose you give the model:
+
+> "The capital of France is"
+
+The model doesn't simply look up the answer and output `"Paris"`.
+
+Conceptually, the model produces a score for **every possible next token**.
+
+For example:
+
+```text
+Paris        → 8.7
+London       → 5.2
+Berlin       → 4.8
+Rome         → 3.9
+banana       → -2.1
+```
+
+These raw scores are called **logits**.
+
+---
+
+# 2. What are logits?
+
+A **logit** is essentially the model's raw preference score for a token.
+
+Higher logit:
+
+> "I think this token is more likely."
+
+Lower logit:
+
+> "I think this token is less likely."
+
+For example:
+
+```text
+Token       Logit
+-----------------
+Paris        8.7
+London       5.2
+Berlin       4.8
+Rome         3.9
+banana      -2.1
+```
+
+But these aren't probabilities yet.
+
+You can't say:
+
+> Paris = 8.7% probability.
+
+That's wrong.
+
+---
+
+# 3. Softmax converts logits into probabilities
+
+The model converts logits into probabilities using a function called **softmax**.
+
+Conceptually:
+
+```text
+              LOGITS
+                 │
+                 ▼
+              Softmax
+                 │
+                 ▼
+           PROBABILITIES
+```
+
+For example:
+
+```text
+Paris       90%
+London       4%
+Berlin       3%
+Rome         2%
+banana       0.01%
+...
+```
+
+The probabilities add up to approximately:
+
+```text
+100%
+```
+
+Now the model has a probability distribution over possible next tokens.
+
+---
+
+# 4. Then comes sampling
+
+Suppose the model produces:
+
+```text
+Paris       90%
+London       4%
+Berlin       3%
+Rome         2%
+Madrid       1%
+```
+
+There are two broad possibilities.
+
+### Greedy selection
+
+Always select the highest-probability token:
+
+```text
+Paris
+```
+
+### Sampling
+
+Randomly select according to the probabilities.
+
+So most of the time:
+
+```text
+Paris
+```
+
+but occasionally:
+
+```text
+London
+Berlin
+Rome
+```
+
+could be selected.
+
+And **this is where temperature and Top-P become relevant.**
+
+---
+
+# 5. Where temperature fits
+
+The pipeline is roughly:
+
+```text
+Prompt
+  ↓
+Transformer
+  ↓
+Logits
+  ↓
+Temperature adjustment
+  ↓
+Softmax
+  ↓
+Probability distribution
+  ↓
+Top-P / Top-K filtering
+  ↓
+Sampling
+  ↓
+Next token
+```
+
+Temperature changes the shape of the probability distribution.
+
+### Low temperature
+
+The distribution becomes sharper:
+
+```text
+Paris       98%
+London       1%
+Berlin       0.5%
+Rome         0.5%
+```
+
+### Higher temperature
+
+The distribution becomes flatter:
+
+```text
+Paris       60%
+London      15%
+Berlin      12%
+Rome         8%
+Madrid       5%
+```
+
+So higher temperature gives alternative tokens more opportunity.
+
+---
+
+# 6. And then Top-P
+
+Suppose after temperature adjustment we have:
+
+```text
+Paris       60%
+London      15%
+Berlin      12%
+Rome         8%
+Madrid       3%
+Tokyo        1%
+...
+```
+
+With:
+
+```text
+Top-P = 0.90
+```
+
+we accumulate probabilities:
+
+```text
+Paris       60%    → 60%
+London      15%    → 75%
+Berlin      12%    → 87%
+Rome         8%    → 95%  ← stop
+```
+
+So the candidate pool becomes:
+
+```text
+Paris
+London
+Berlin
+Rome
+```
+
+Then the model samples from that pool.
+
+---
+
+# 7. But there's one more step
+
+After selecting the token:
+
+```text
+Paris
+```
+
+the model puts it back into the sequence:
+
+```text
+The capital of France is Paris
+```
+
+Then it runs the process again.
+
+It predicts the **next token**.
+
+Perhaps:
+
+```text
+.
+```
+
+Then again.
+
+Perhaps:
+
+```text
+It
+```
+
+Then:
+
+```text
+is
+```
+
+And so on.
+
+This is the fundamental generation loop:
+
+```text
+┌─────────────────────────────┐
+│                             │
+│  Existing tokens            │
+│          ↓                  │
+│      Transformer            │
+│          ↓                  │
+│        Logits               │
+│          ↓                  │
+│      Temperature            │
+│          ↓                  │
+│       Softmax               │
+│          ↓                  │
+│     Top-P / Top-K           │
+│          ↓                  │
+│       Sampling              │
+│          ↓                  │
+│      Next token             │
+│          │                  │
+│          └──────────────┐   │
+│                         │   │
+└─────────────────────────┼───┘
+                          │
+                    repeat until
+                       stopping
+```
+
+---
+
+# 8. This explains something profound about LLMs
+
+Suppose you ask:
+
+> "What is 2 + 2?"
+
+The model might produce:
+
+```text
+The →  probability distribution
+answer → probability distribution
+is → probability distribution
+4 → probability distribution
+```
+
+It is **not fundamentally operating as a traditional database lookup system**.
+
+Its core operation is:
+
+> Given everything so far, calculate a probability distribution for what should come next.
+
+And repeat.
+
+---
+
+# 9. Why does this produce reasoning?
+
+This is where things become interesting.
+
+Consider:
+
+> "If Alice has 3 apples and buys 2 more, how many apples does she have?"
+
+The model generates a sequence that might internally progress through:
+
+```text
+3
++
+2
+=
+5
+```
+
+More sophisticated models can produce long chains of intermediate computations, tool calls, code execution, etc.
+
+But underneath the generation mechanism, the model is still producing tokens conditioned on the preceding context.
+
+**This is the fundamental idea you need before learning Transformers.**
+
+---
+
+# 10. The hierarchy you should now understand
+
+You've now got this:
+
+```text
+TEXT
+ ↓
+TOKENS
+ ↓
+MODEL
+ ↓
+LOGITS
+ ↓
+TEMPERATURE
+ ↓
+PROBABILITIES
+ ↓
+TOP-P / TOP-K
+ ↓
+SAMPLING
+ ↓
+NEXT TOKEN
+ ↓
+repeat
+```
+
+And this connects directly to the concepts we learned earlier:
+
+```text
+Input tokens
+     ↓
+Context window
+     ↓
+Transformer
+     ↓
+Output token generation
+     ↓
+Output tokens
+```
+
+---
+
+## The next major concept: **Embeddings**
+
+This is where we move from:
+
+> **"How does the model generate tokens?"**
+
+to:
+
+> **"How does a neural network actually represent the meaning of tokens?"**
+
+We'll go into **tokens → embeddings → vectors → semantic similarity**, which is also the foundation for **RAG, vector databases, semantic search and modern AI applications**.
