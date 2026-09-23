@@ -1,0 +1,481 @@
+# 90-Day AI Engineering Roadmap
+
+For transitioning into:
+
+* Agentic AI
+* RAG Engineering
+* Enterprise AI Systems
+* AI Infra + Security Agents
+
+The goal is:
+
+> Become capable of building production-grade AI systems.
+
+---
+
+# Overall Strategy
+
+Instead of learning everything randomly:
+
+## You will build:
+
+1. Strong AI foundations
+2. RAG systems
+3. Agentic workflows
+4. AI infra knowledge
+5. Portfolio projects
+6. Public proof of work
+
+By end of 90 days:
+
+* 3 portfolio-grade projects
+* deployed AI applications
+* GitHub portfolio
+* strong understanding of enterprise AI systems
+---
+
+# PHASE 1 — AI Foundations (Week 1–2)
+
+Goal:
+Understand modern LLM engineering properly.
+
+---
+
+## Week 1 — Core AI Engineering
+
+### Learn
+
+* how LLMs work
+* tokens
+* embeddings
+* context windows
+* prompts
+* structured outputs
+* tool calling
+* temperature/top_p
+* inference basics
+
+### Build
+
+Simple:
+
+* chatbot with memory
+* structured JSON output app
+
+### Stack
+
+* Python
+* FastAPI
+* OpenAI SDK
+
+### Resources
+
+* [OpenAI Docs](https://platform.openai.com/docs/overview?utm_source=chatgpt.com)
+* [FastAPI Docs](https://fastapi.tiangolo.com/?utm_source=chatgpt.com)
+
+---
+
+## Week 2 — Production API Skills
+
+### Learn
+
+* async Python
+* retries
+* streaming
+* rate limiting
+* logging
+* API orchestration
+
+### Build
+
+AI API gateway:
+
+* supports multiple models
+* fallback handling
+* token tracking
+
+### Learn
+
+* asyncio
+* pydantic
+* uvicorn
+* Docker basics
+
+---
+
+# PHASE 2 — RAG Engineering (Week 3–5)
+
+This is your first major specialization.
+
+---
+
+## Week 3 — RAG Basics
+
+### Learn
+
+* embeddings
+* chunking
+* vector search
+* cosine similarity
+* retrieval pipelines
+
+### Build
+
+PDF chatbot.
+
+### Stack
+
+* LangChain OR LlamaIndex
+* ChromaDB
+
+### Deliverable
+
+Upload to GitHub.
+
+---
+
+## Week 4 — Advanced RAG
+
+### Learn
+
+* hybrid search
+* reranking
+* metadata filtering
+* query transformation
+* semantic caching
+
+### Build
+
+Cloud Security Knowledge Assistant.
+
+Use:
+
+* AWS docs
+* IAM docs
+* Azure RBAC docs
+
+### Important
+
+This should align with your CIEM background.
+
+---
+
+## Week 5 — Enterprise RAG
+
+### Learn
+
+* ingestion pipelines
+* OCR
+* document processing
+* evaluation
+* hallucination detection
+
+### Build
+
+Enterprise Policy Assistant:
+
+* role-based responses
+* citations
+* source tracking
+
+### Learn
+
+* Redis
+* PostgreSQL
+* Qdrant
+
+---
+
+# PHASE 3 — Agentic AI (Week 6–8)
+
+Now you move beyond chatbots.
+
+---
+
+## Week 6 — Tool Calling + Agents
+
+### Learn
+
+* agent loops
+* planning
+* execution
+* memory
+* tools
+
+### Framework
+
+* LangGraph
+
+### Build
+
+Cloud Operations Agent:
+
+* fetch logs
+* summarize incidents
+* suggest remediation
+
+---
+
+## Week 7 — Multi-Agent Systems
+
+### Learn
+
+* orchestrator patterns
+* planner/executor architecture
+* supervisor agents
+* agent communication
+
+### Build
+
+Security Investigation System:
+Agents:
+
+* log analyzer
+* IAM analyzer
+* remediation agent
+* report generator
+
+---
+
+## Week 8 — Long Running Workflows
+
+### Learn
+
+* queues
+* retries
+* state management
+* event-driven systems
+
+### Build
+
+Automated Cloud Governance Agent.
+
+This project can become VERY strong for your profile.
+
+---
+
+# PHASE 4 — AI Infrastructure (Week 9–10)
+
+This is where seniority shows.
+
+---
+
+## Week 9 — Deployment + Infra
+
+### Learn
+
+* Docker deeply
+* Kubernetes basics
+* CI/CD
+* GPU basics
+* observability
+
+### Build
+
+Deploy your RAG system:
+
+* containerized
+* cloud hosted
+* monitoring enabled
+
+### Learn
+
+* Prometheus basics
+* Grafana basics
+
+---
+
+## Week 10 — AI Evaluation + Reliability
+
+### Learn
+
+* hallucination detection
+* eval frameworks
+* regression testing
+* tracing
+* monitoring
+
+### Tools
+
+* LangSmith
+* OpenTelemetry basics
+
+### Build
+
+Evaluation dashboard for your agents.
+
+---
+
+# PHASE 5 — Production Portfolio (Week 11–12)
+
+Now package everything professionally.
+
+---
+
+## Week 11 — Final Production Project
+
+Build:
+
+# “AI Cloud Security Copilot”
+
+Features:
+
+* RAG over cloud docs
+* IAM analysis
+* incident investigation
+* remediation suggestions
+* workflow automation
+
+### Architecture
+
+* FastAPI backend
+* vector DB
+* Redis
+* PostgreSQL
+* LangGraph
+* OpenAI APIs
+
+This should become your flagship project.
+
+---
+
+## Week 12 — Public Presence
+
+### Create
+
+* GitHub repos
+* architecture diagrams
+* README docs
+* demo videos
+* LinkedIn posts
+* technical blogs
+
+### Write About
+
+* AI for cloud security
+* RAG architecture
+* agent orchestration
+* enterprise AI systems
+
+---
+
+# Technologies You Must Know By End
+
+## AI Stack
+
+* OpenAI APIs
+* embeddings
+* RAG
+* vector DBs
+* LangGraph
+* tool calling
+
+## Backend
+
+* Python
+* FastAPI
+* async programming
+
+## Infra
+
+* Docker
+* Redis
+* PostgreSQL
+* Kubernetes basics
+
+## Engineering
+
+* logging
+* observability
+* retries
+* scalability
+* queues
+
+---
+
+# Best Learning Order
+
+DO NOT:
+
+* jump into autonomous swarms
+* chase hype demos
+* learn 15 frameworks
+
+Instead:
+
+## Learn deeply
+
+1. Python async
+2. APIs
+3. RAG
+4. vector DBs
+5. LangGraph
+6. infra
+7. evaluation
+
+---
+
+# Daily Structure (Recommended)
+
+## Morning (Best Deep Work)
+
+9–11 AM
+
+* coding
+* architecture
+* projects
+
+## Evening
+
+5–6 PM
+
+* tutorials
+* debugging
+* reading
+
+## Weekend
+
+* deployment
+* project integration
+* documentation
+
+---
+
+# What You Should Build FIRST
+
+Start immediately with:
+
+## Project 1
+
+“Enterprise RAG for Cloud Security Docs”
+
+Why?
+Because it directly aligns with:
+
+* AWS onboarding
+* CIEM
+* CloudTrail
+* Azure permissions
+
+This creates:
+
+* domain leverage
+* differentiated portfolio
+* interview advantage
+
+---
+
+# Final Outcome After 90 Days
+
+You should be able to:
+
+* build production AI systems
+* create enterprise RAG pipelines
+* orchestrate AI agents
+* deploy scalable AI apps
+* design AI infra
+* discuss architecture confidently
+* apply for senior AI engineering roles
+
+And most importantly:
+You will NOT look like another generic “prompt engineer.”
