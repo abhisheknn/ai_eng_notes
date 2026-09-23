@@ -1,0 +1,157 @@
+The simplest way to think about it:
+
+> **Temperature changes how much you favor unlikely tokens. Top-P limits which tokens are even allowed to compete.**
+
+### Example
+
+Suppose the model is choosing the next word after:
+
+> "The movie was..."
+
+It calculates probabilities:
+
+| Token       | Probability |
+| ----------- | ----------: |
+| great       |         50% |
+| good        |         25% |
+| interesting |         12% |
+| terrible    |          6% |
+| boring      |          4% |
+| confusing   |          3% |
+
+### Temperature
+
+Temperature modifies the **probability distribution**.
+
+**Low temperature:**
+
+```text
+great      ████████████████████
+good       ████████
+interesting ██
+terrible   ▏
+```
+
+The model strongly prefers the most likely answer.
+
+**High temperature:**
+
+```text
+great      ████████████
+good       ███████
+interesting █████
+terrible   ███
+boring     ██
+confusing  ██
+```
+
+Less-likely options get a better chance.
+
+So:
+
+> **Temperature = how "risky" the sampling is.**
+
+---
+
+### Top-P
+
+Top-P works differently.
+
+Suppose:
+
+```text
+great        50%
+good         25%
+interesting  12%
+terrible      6%
+boring        4%
+confusing     3%
+```
+
+Set:
+
+```text
+top_p = 0.90
+```
+
+The model takes the smallest group whose cumulative probability reaches ~90%:
+
+```text
+great        50%
+good         25%   → 75%
+interesting  12%   → 87%
+terrible      6%   → 93%  ← stop
+```
+
+So only these four candidates participate:
+
+```text
+great
+good
+interesting
+terrible
+```
+
+`boring` and `confusing` are effectively removed from the sampling pool for that step.
+
+So:
+
+> **Top-P = how wide a probability pool the model is allowed to sample from.**
+
+---
+
+## The key difference
+
+Think of a race.
+
+**Temperature:**
+
+> "Change the odds of the runners."
+
+**Top-P:**
+
+> "Decide which runners are allowed into the race."
+
+That's the cleanest mental model.
+
+---
+
+### Temperature vs Top-P
+
+|                       | Temperature                  | Top-P                     |
+| --------------------- | ---------------------------- | ------------------------- |
+| Changes probabilities | ✅                            | Not directly              |
+| Removes candidates    | ❌                            | ✅                         |
+| Controls randomness   | ✅                            | ✅                         |
+| Main idea             | Change probability sharpness | Restrict probability mass |
+| Typical use           | More/less deterministic      | Limit unlikely choices    |
+
+### One subtle but important point
+
+They're **not independent alternatives**.
+
+You can use both:
+
+```text
+Temperature → reshape probabilities
+                    ↓
+Top-P → select probability mass
+                    ↓
+Sample next token
+```
+
+But in practice, you generally don't want to aggressively tune both simultaneously because it becomes harder to understand which parameter caused the behavior.
+
+### For your AI engineering mental model
+
+Remember:
+
+```text
+Temperature = "How adventurous?"
+
+Top-P       = "How many plausible choices are we considering?"
+```
+
+And one more important distinction:
+
+**Neither makes the model more intelligent.** They change **sampling behavior** after the model has produced its probability distribution.
