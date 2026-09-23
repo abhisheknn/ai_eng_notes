@@ -1,0 +1,1447 @@
+Absolutely. Let's redo Day 2 properly, like a first-year graduate-level lesson, but with concrete examples throughout.
+
+Day 2 — Embeddings, Vectors, Similarity & RAG
+
+Yesterday we learned how an LLM generates text.
+
+Today we learn how AI systems represent information so that machines can work with meaning, not just exact words.
+
+The central chain is:
+
+Text → tokens → representations/vectors → similarity → retrieval → LLM context
+
+
+---
+
+1. First: What problem are embeddings solving?
+
+Imagine you have these three sentences:
+
+A
+
+> I forgot my password.
+
+
+
+B
+
+> I can't remember my login credentials.
+
+
+
+C
+
+> I had chicken biryani for lunch.
+
+
+
+A human immediately understands:
+
+A ↔ B   very similar
+A ↔ C   unrelated
+
+But a simple computer doing string matching sees:
+
+A: forgot password
+B: remember login credentials
+
+Almost none of the words match.
+
+So traditional keyword matching can fail.
+
+We want a representation where:
+
+"I forgot my password"
+
+and
+
+"I can't remember my login credentials"
+
+end up close together mathematically.
+
+That's what embeddings are for.
+
+
+---
+
+2. What exactly is an embedding?
+
+An embedding is a numerical representation of some input.
+
+For example, imagine an embedding model gives:
+
+"I forgot my password"
+
+→ [0.82, -0.11, 0.43, 0.91, -0.20, ...]
+
+Maybe:
+
+"I can't remember my login credentials"
+
+→ [0.79, -0.09, 0.40, 0.88, -0.18, ...]
+
+And:
+
+"I ate chicken biryani"
+
+→ [-0.31, 0.74, 0.02, -0.62, 0.55, ...]
+
+The first two vectors are much more similar.
+
+The third is farther away.
+
+Important: don't interpret an individual dimension as something human-readable like:
+
+dimension 1 = password
+dimension 2 = food
+
+The representation is distributed across many dimensions.
+
+
+---
+
+3. What is a vector?
+
+A vector is just an ordered list of numbers.
+
+For example:
+
+[0.2, 0.5, -0.1, 0.8]
+
+You already know this concept from mathematics.
+
+Think of it as a point in space.
+
+With 2 dimensions:
+
+(3, 4)
+
+is a point on a 2D plane.
+
+With 3 dimensions:
+
+(3, 4, 7)
+
+is a point in 3D space.
+
+An embedding might have hundreds or thousands of dimensions.
+
+So conceptually:
+
+Text
+  ↓
+Embedding model
+  ↓
+[0.21, -0.72, 0.45, ...]
+
+
+---
+
+4. Why do thousands of dimensions help?
+
+Suppose we tried representing a document using only three numbers:
+
+[topic, sentiment, length]
+
+That would be far too simplistic.
+
+A real embedding can capture many interacting properties.
+
+For example, two documents may differ in:
+
+topic
+language
+style
+intent
+domain
+meaning
+entities
+relationship between concepts
+
+A high-dimensional representation gives the model much more room to encode useful information.
+
+Think of it as:
+
+3 dimensions
+    ↓
+too little space
+
+1000+ dimensions
+    ↓
+much richer representation
+
+But don't make the mistake of thinking:
+
+> "More dimensions automatically means better."
+
+
+
+It doesn't. Quality depends on the embedding model, training objective, and use case.
+
+
+---
+
+5. Token vs embedding
+
+This is one of the most important Day 2 distinctions.
+
+Suppose:
+
+> "I love pizza."
+
+
+
+After tokenization, it might become something conceptually like:
+
+["I", " love", " pizza", "."]
+
+or token IDs such as:
+
+[40, 1842, 9281, 13]
+
+Those IDs are not semantic representations.
+
+Now an embedding model might produce:
+
+[0.12, -0.44, 0.81, ...]
+
+So:
+
+TOKEN
+↓
+symbol / identifier
+
+EMBEDDING
+↓
+numeric representation useful for semantic comparison
+
+Example
+
+The words:
+
+> car
+
+
+
+and
+
+> automobile
+
+
+
+have completely different token IDs.
+
+But their embeddings can be quite close.
+
+That's exactly what we want.
+
+
+---
+
+6. An important subtlety: embeddings inside a Transformer
+
+Here's where terminology gets confusing.
+
+A Transformer itself also converts token IDs into vectors very early in its processing.
+
+Conceptually:
+
+"I love pizza"
+      ↓
+token IDs
+      ↓
+token embeddings
+      ↓
+Transformer
+      ↓
+contextual representations
+
+These internal vectors are part of how the model computes.
+
+When an AI engineer says:
+
+> "Let's generate embeddings for our documents."
+
+
+
+they usually mean using a dedicated embedding model/API to produce vectors for search, retrieval, clustering, recommendations, etc.
+
+So the same word—embedding—can appear in two contexts.
+
+
+---
+
+7. Example: Search engine
+
+Imagine an online store with:
+
+10 million products
+
+User searches:
+
+> "running shoes for marathon"
+
+
+
+A keyword search might look for:
+
+running
+shoes
+marathon
+
+Now consider a product titled:
+
+> "Lightweight carbon-plated race trainers"
+
+
+
+No word "marathon" appears.
+
+Keyword search may miss it.
+
+Semantic search can understand that:
+
+"running shoes for marathon"
+
+and
+
+"carbon-plated race trainers"
+
+are related.
+
+The pipeline:
+
+Product descriptions
+      ↓
+Embedding model
+      ↓
+Vectors
+      ↓
+Vector database
+
+User query
+      ↓
+Embedding model
+      ↓
+Query vector
+      ↓
+Find nearest vectors
+      ↓
+Relevant products
+
+
+---
+
+8. Similarity: how do we know vectors are close?
+
+We need a mathematical way to compare vectors.
+
+One very common choice is:
+
+Cosine similarity
+
+Suppose:
+
+A = [1, 0]
+B = [0.9, 0.1]
+C = [-1, 0]
+
+Visually:
+
+B
+      /
+     /
+A ──→
+
+C ←──
+
+A and B point in almost the same direction.
+
+So:
+
+similarity(A, B) ≈ high
+
+A and C point in opposite directions:
+
+similarity(A, C) ≈ very low
+
+The intuition is:
+
+> Cosine similarity asks whether two vectors point in a similar direction.
+
+
+
+For normalized vectors, cosine similarity is especially convenient.
+
+
+---
+
+9. Example of semantic similarity
+
+Let's use an artificial example.
+
+Suppose:
+
+Sentence 1:
+"My laptop battery is dead."
+
+Sentence 2:
+"My computer won't turn on because the battery has no charge."
+
+Sentence 3:
+"How do I make paneer?"
+
+Imagine the embedding model gives:
+
+Similarity(1,2) = 0.91
+Similarity(1,3) = 0.08
+
+You shouldn't obsess over exact numerical thresholds—these depend on the model and application.
+
+The important thing is the relative ordering:
+
+1 ≈ 2
+1 ≠ 3
+
+
+---
+
+10. Embeddings aren't just for sentences
+
+You can embed many types of things.
+
+Documents
+
+Company policy
+→ vector
+
+Product descriptions
+
+Nike running shoe
+→ vector
+
+User queries
+
+"best shoes for long distance running"
+→ vector
+
+Images
+
+Some multimodal models can place image representations and text representations into related vector spaces.
+
+For example:
+
+image of a dog
+       ↕
+"text about a dog"
+
+This enables image-text retrieval.
+
+Users
+
+Some recommendation systems represent users or user behavior as vectors.
+
+Conceptually:
+
+User A → vector
+Movie A → vector
+Movie B → vector
+Movie C → vector
+
+Then the system can identify items that are close to the user's representation.
+
+
+---
+
+11. Example: Recommendation system
+
+Imagine Netflix-like recommendations.
+
+A user watches:
+
+Interstellar
+Arrival
+The Martian
+
+The system can create representations of movies and user preferences.
+
+Conceptually:
+
+User vector
+    ↓
+[0.7, -0.2, 0.8, ...]
+
+Nearby movies may include:
+
+Gravity
+Ex Machina
+Blade Runner 2049
+
+Even if the user has never watched those movies.
+
+That's the power of representation + similarity.
+
+
+---
+
+12. Example: Customer support
+
+Suppose your company receives:
+
+10 million support tickets
+
+A user asks:
+
+> "My Azure VM suddenly stopped working."
+
+
+
+You could retrieve historical tickets with similar meaning:
+
+"VM became unavailable"
+"Virtual machine won't start"
+"Compute instance failed"
+"Azure server is unreachable"
+
+Even though the wording differs.
+
+Pipeline:
+
+Historical tickets
+       ↓
+Embeddings
+       ↓
+Vector DB
+
+New ticket
+       ↓
+Embedding
+       ↓
+Similarity search
+       ↓
+Similar historical tickets
+
+This can power:
+
+duplicate ticket detection
+
+support recommendations
+
+routing
+
+FAQ search
+
+agent assistance
+
+
+
+---
+
+13. What is a vector database?
+
+A vector database stores vectors and lets you search for nearby vectors efficiently.
+
+Imagine:
+
+Document A → [0.2, 0.8, ...]
+Document B → [0.9, 0.1, ...]
+Document C → [0.3, 0.7, ...]
+...
+10 million documents
+
+User asks:
+
+> "How do I rotate an Azure service principal secret?"
+
+
+
+The query becomes:
+
+query vector
+
+The database searches for the nearest document vectors.
+
+Conceptually:
+
+Query
+               ●
+              / \
+             /   \
+            ●     ●
+       Doc A      Doc B
+                    \
+                     ● Doc C
+
+The closest documents are candidates for retrieval.
+
+
+---
+
+14. Why not just use PostgreSQL?
+
+You actually can.
+
+This is especially relevant to you because you work with PostgreSQL.
+
+PostgreSQL can store vectors using extensions such as pgvector.
+
+So you could have:
+
+Postgres
+├── document_id
+├── text
+├── metadata
+└── embedding vector
+
+Then perform vector similarity search.
+
+This is one reason people don't always need a separate vector database.
+
+For a moderate-scale application:
+
+Postgres + pgvector
+
+can be a perfectly reasonable architecture.
+
+
+---
+
+15. What is RAG?
+
+Now we're ready for the most important application.
+
+RAG = Retrieval-Augmented Generation
+
+Let's say your company has:
+
+Internal engineering documentation
+
+The LLM itself doesn't automatically know those private documents.
+
+So we retrieve the relevant information and place it into the prompt.
+
+
+---
+
+16. RAG example
+
+User:
+
+> "How do I onboard an Azure subscription into our CIEM system?"
+
+
+
+Step 1 — User query
+
+How do I onboard an Azure subscription into our CIEM system?
+
+Step 2 — Generate query embedding
+
+query
+ ↓
+embedding model
+ ↓
+vector
+
+Step 3 — Search vector database
+
+Find chunks such as:
+
+Chunk 1:
+Azure subscription registration process...
+
+Chunk 2:
+Required service principal permissions...
+
+Chunk 3:
+Tenant onboarding prerequisites...
+
+Step 4 — Construct LLM context
+
+Now your application creates something conceptually like:
+
+SYSTEM:
+You are an internal CIEM assistant.
+
+CONTEXT:
+[Chunk 1]
+[Chunk 2]
+[Chunk 3]
+
+USER:
+How do I onboard an Azure subscription?
+
+Step 5 — LLM generates answer
+
+To onboard the subscription:
+
+1. Create...
+2. Assign...
+3. Configure...
+
+This is RAG.
+
+
+---
+
+17. RAG has two different systems
+
+This is incredibly important.
+
+People sometimes say:
+
+> "The LLM searches the database."
+
+
+
+Usually, that's not technically accurate.
+
+There are two major components:
+
+Retrieval system
+
+Embedding model
++
+Vector database
+
+Its job:
+
+> Find relevant information.
+
+
+
+Generation system
+
+LLM
+
+Its job:
+
+> Use that information to generate the answer.
+
+
+
+So:
+
+RAG
+                 │
+       ┌─────────┴─────────┐
+       │                   │
+   Retrieval            Generation
+       │                   │
+Embedding model           LLM
+       │                   │
+Vector DB             Answer
+
+
+---
+
+18. Why do we chunk documents?
+
+Imagine a 500-page PDF.
+
+You could theoretically create one embedding for the entire document.
+
+But that's usually poor for retrieval.
+
+Suppose page 412 contains:
+
+> "The required Azure role is Reader."
+
+
+
+If the entire 500-page document becomes one vector, the embedding represents the overall document.
+
+Your question:
+
+> "What Azure role is required?"
+
+
+
+may not retrieve the exact useful passage as precisely as you'd like.
+
+So we split it.
+
+500-page document
+        ↓
+     chunks
+        ↓
+┌────┬────┬────┬────┬────┐
+│ C1 │ C2 │ C3 │ C4 │ ...│
+└────┴────┴────┴────┴────┘
+
+Now each chunk has its own embedding.
+
+The relevant chunk can be retrieved directly.
+
+
+---
+
+19. Example of chunking
+
+Suppose we have:
+
+Section 1:
+Azure onboarding requires tenant ID...
+
+Section 2:
+The service principal requires Reader...
+
+Section 3:
+The onboarding API should then be invoked...
+
+Instead of one embedding:
+
+Entire document → vector
+
+we produce:
+
+Section 1 → vector 1
+Section 2 → vector 2
+Section 3 → vector 3
+
+Query:
+
+> "What role does the service principal need?"
+
+
+
+may retrieve:
+
+Section 2
+
+with very high similarity.
+
+
+---
+
+20. Chunking isn't simply "every N tokens"
+
+This is where real AI engineering starts getting interesting.
+
+You could do:
+
+every 500 tokens
+
+but that can split information badly.
+
+For example:
+
+Chunk 1:
+The service principal requires Reader
+
+Chunk 2:
+role on the subscription.
+
+Now neither chunk contains the complete statement.
+
+Better chunking might preserve semantic boundaries:
+
+Heading
++
+paragraph
++
+related paragraph
+
+or use overlapping windows.
+
+For example:
+
+Chunk 1: tokens 1–500
+Chunk 2: tokens 400–900
+Chunk 3: tokens 800–1300
+
+This creates overlap.
+
+
+---
+
+21. Why overlap?
+
+Suppose the important statement occurs at a boundary.
+
+Without overlap:
+
+Chunk 1:
+"The role is Reader. However..."
+          ↑
+        ends
+
+Chunk 2:
+"...the role changes for management groups."
+
+Context can get lost.
+
+With overlap:
+
+Chunk 1
+tokens 1–500
+
+Chunk 2
+tokens 400–900
+
+the model gets some shared context.
+
+This is common in basic RAG pipelines, although modern systems can use more sophisticated retrieval and chunking strategies.
+
+
+---
+
+22. Embedding search doesn't mean "understanding perfectly"
+
+This is an important limitation.
+
+Suppose:
+
+Query:
+"Can I delete production databases?"
+
+Document A:
+"Production database deletion requires approval."
+
+Document B:
+"Database deletion is prohibited in production."
+
+They may both be semantically close to the query.
+
+Retrieval can find both.
+
+But the system still needs to distinguish them.
+
+That's why RAG isn't simply:
+
+embedding → answer
+
+It's often:
+
+embedding retrieval
+        ↓
+candidate documents
+        ↓
+reranking / filtering
+        ↓
+LLM
+        ↓
+answer
+
+
+---
+
+23. Retrieval vs reranking
+
+Suppose vector search returns:
+
+Top 20 documents
+
+You might then use a reranker to determine which 5 are most relevant.
+
+So:
+
+Query
+ ↓
+Embedding
+ ↓
+Vector search
+ ↓
+Top 20
+ ↓
+Reranker
+ ↓
+Top 5
+ ↓
+LLM
+
+This two-stage architecture is very common.
+
+Why?
+
+Because vector similarity is a useful first filter, but it isn't always the best final relevance judgment.
+
+
+---
+
+24. Semantic search vs keyword search
+
+Let's compare.
+
+Query:
+
+> "How can I recover a lost password?"
+
+
+
+Keyword search
+
+Looks for:
+
+recover
+lost
+password
+
+Semantic search
+
+May retrieve:
+
+"Resetting forgotten credentials"
+"Account access recovery"
+"User authentication recovery procedure"
+
+This is especially useful when:
+
+terminology varies
+
+users phrase things differently
+
+documents contain jargon
+
+exact word matching isn't sufficient
+
+
+
+---
+
+25. Hybrid search
+
+In real systems, you often combine:
+
+Keyword search
++
+Vector search
+
+Why?
+
+Because exact matching still matters.
+
+For example, query:
+
+> "CVE-2026-12345"
+
+
+
+A semantic model shouldn't replace exact identifier matching.
+
+You may want:
+
+BM25 / keyword search
++
+vector similarity
+
+and combine the results.
+
+So production search often looks more like:
+
+Query
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+   Keyword search        Vector search
+        │                     │
+        └──────────┬──────────┘
+                   ▼
+              Fusion/Rerank
+                   │
+                   ▼
+              Best results
+
+
+---
+
+26. Example: Your CIEM use case
+
+Imagine your system has documentation for:
+
+Azure RBAC
+Entra ID
+Role assignments
+Deny assignments
+Azure Policy
+Service principals
+Management groups
+Subscriptions
+
+User asks:
+
+> "Why can't this service principal access the storage account even though it has Contributor?"
+
+
+
+A useful RAG system might retrieve documentation about:
+
+1. Contributor permissions
+2. Storage data-plane permissions
+3. Deny assignments
+4. Scope inheritance
+5. Azure Policy restrictions
+
+Now the LLM receives those specific pieces.
+
+Without retrieval:
+
+LLM
+ ↓
+generic Azure knowledge
+
+With RAG:
+
+LLM
+ ↓
+generic Azure knowledge
++
+your internal/current documentation
++
+your organization-specific rules
+
+That's enormously more useful for enterprise systems.
+
+
+---
+
+27. One critical distinction: embeddings don't "contain the document"
+
+This is a common misconception.
+
+Suppose:
+
+Document:
+"Azure Contributor role does not automatically grant all data-plane permissions..."
+
+Its embedding is not a compressed copy of the entire document that you can decode later.
+
+Think of the embedding primarily as a representation useful for similarity/retrieval.
+
+You still keep the original text:
+
+Database
+
+document_id
+text
+embedding
+metadata
+
+Then:
+
+embedding → find document
+document → give actual text to LLM
+
+That's a crucial architectural pattern.
+
+
+---
+
+28. Metadata is extremely important
+
+Suppose your vector database contains:
+
+1 million documents
+
+You don't necessarily want semantic search across all of them.
+
+You may want:
+
+cloud = Azure
+environment = production
+document_type = RBAC
+version = 2026
+
+Then:
+
+vector similarity
++
+metadata filtering
+
+Example:
+
+> Search only Azure RBAC documents from 2026.
+
+
+
+This can dramatically improve retrieval quality.
+
+
+---
+
+29. Embeddings and multilingual systems
+
+Embeddings become especially interesting with languages.
+
+For example:
+
+"How do I reset my password?"
+
+"पासवर्ड कैसे रीसेट करूँ?"
+
+A good multilingual embedding model may place these near each other.
+
+Then a user can ask in one language and retrieve documents written in another.
+
+That enables:
+
+cross-language search
+
+This is another reason embeddings are much more powerful than keyword matching.
+
+
+---
+
+30. Embeddings and code
+
+Embeddings aren't limited to natural language.
+
+You can represent:
+
+Java code
+Python code
+SQL
+Terraform
+Kubernetes YAML
+
+Then search semantically.
+
+For example:
+
+> "Find functions that authenticate with AWS."
+
+
+
+could retrieve code containing:
+
+boto3.client(...)
+
+even if the exact phrase "authenticate with AWS" isn't present.
+
+This can support:
+
+code search
+duplicate detection
+repository exploration
+bug similarity
+security analysis
+
+
+---
+
+31. The full production architecture
+
+Now combine everything we've learned.
+
+USER
+                           │
+                           ▼
+                        QUERY
+                           │
+                ┌──────────┴──────────┐
+                │                     │
+          Keyword Search        Embedding Model
+                │                     │
+                │               Query Vector
+                │                     │
+                └──────────┬──────────┘
+                           ▼
+                    Candidate Retrieval
+                           │
+                           ▼
+                        Reranker
+                           │
+                           ▼
+                  Top Relevant Chunks
+                           │
+                           ▼
+                    Context Builder
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │    LLM Context    │
+                 │                   │
+                 │ System Prompt     │
+                 │ Retrieved Chunks  │
+                 │ User Question     │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                          LLM
+                           │
+                           ▼
+                      Output Tokens
+                           │
+                           ▼
+                         Answer
+
+That's an actual AI application architecture, not merely "call GPT."
+
+
+---
+
+32. The five levels you should now understand
+
+Level 1 — Token
+
+"hello"
+
+is broken into model-specific token units.
+
+Level 2 — Vector
+
+[0.21, -0.33, ...]
+
+is a numerical representation.
+
+Level 3 — Similarity
+
+vector A ↔ vector B
+
+tells us how related they are.
+
+Level 4 — Retrieval
+
+query
+ ↓
+nearest vectors
+ ↓
+relevant documents
+
+Level 5 — Generation
+
+retrieved documents
++
+question
+ ↓
+LLM
+ ↓
+answer
+
+
+---
+
+33. Day 1 + Day 2 together
+
+You now have two sides of modern LLM applications.
+
+Day 1 — Generation
+
+Context
+  ↓
+Transformer
+  ↓
+Logits
+  ↓
+Temperature / Top-P
+  ↓
+Next token
+  ↓
+Next token
+  ↓
+...
+
+Day 2 — Retrieval
+
+Text
+ ↓
+Embedding model
+ ↓
+Vector
+ ↓
+Similarity search
+ ↓
+Relevant text
+
+Combined
+
+RETRIEVAL
+              │
+Text → Embedding → Vector DB
+                      │
+                      ▼
+                Relevant chunks
+                      │
+                      ▼
+                LLM CONTEXT
+                      │
+                      ▼
+                 GENERATION
+                      │
+                      ▼
+                   Tokens
+                      │
+                      ▼
+                   Answer
+
+That is the conceptual foundation of a huge percentage of modern enterprise AI systems.
+
+
+---
+
+Day 2 — What you should be able to explain now
+
+Don't just memorize definitions. You should be able to explain these in your own words:
+
+1. Why are tokens and embeddings different?
+
+Because tokens are units used to represent/process text, while embeddings are numerical representations designed to capture useful relationships such as semantic similarity.
+
+2. Why can "I forgot my password" and "I can't access my account" be close in vector space?
+
+Because the embedding model was trained to map semantically related inputs to similar representations.
+
+3. Why do we need vector databases?
+
+Because we need efficient nearest-neighbor search over potentially millions or billions of vectors.
+
+4. Why do we chunk documents?
+
+Because retrieval needs sufficiently precise pieces of information rather than one representation for an entire large document.
+
+5. Does an embedding contain the original document?
+
+No. It is a representation used for comparison/retrieval. The original content is retained separately.
+
+6. What does RAG do?
+
+It retrieves relevant external information and places it into the LLM's context before generation.
+
+7. What is the difference between retrieval and generation?
+
+Retrieval finds information. Generation produces the answer.
+
+
+---
+
+The one diagram I'd memorize
+
+USER QUESTION
+                          │
+                          ▼
+                    EMBEDDING MODEL
+                          │
+                          ▼
+                    QUERY VECTOR
+                          │
+                          ▼
+                    VECTOR SEARCH
+                          │
+                          ▼
+                 RELEVANT DOCUMENTS
+                          │
+                          ▼
+                    LLM CONTEXT
+                          │
+                          ▼
+                     TRANSFORMER
+                          │
+                          ▼
+                       LOGITS
+                          │
+                          ▼
+                TEMPERATURE / TOP-P
+                          │
+                          ▼
+                    NEXT TOKEN
+                          │
+                          ▼
+                     NEXT TOKEN
+                          │
+                         ...
+                          ▼
+                       ANSWER
+
+Once this diagram feels natural, you've connected Day 1 and Day 2.
+
+Day 3 should be Transformers and Attention. That's where we'll finally open the black box between "input tokens" and "logits." We'll go through embeddings → positional information → Q/K/V → self-attention → multi-head attention → feed-forward layers → Transformer block, with a concrete sentence example at every stage.
