@@ -1,0 +1,4517 @@
+# Day 4 — How Does an LLM Learn?
+## Extremely Detailed Beginner Guide for an Engineering Student
+
+> **Target:** Engineering student who knows basic programming but has little or no AI/ML knowledge.
+>
+> **Goal:** By the end of Day 4, you should be able to explain how a neural network learns, how an LLM is trained, what parameters/loss/gradients/backpropagation/optimizers are, and how training differs from inference, fine-tuning and RAG.
+
+---
+
+# 1. First: What Are We Actually Trying to Understand?
+
+Before learning LLMs, forget words like:
+
+- Transformer
+- GPT
+- RAG
+- Fine-tuning
+- RLHF
+- Embeddings
+
+for a moment.
+
+The most fundamental question is:
+
+> **How can a computer learn something from examples?**
+
+Suppose we give a computer these examples:
+
+```text
+1 + 1 = 2
+2 + 2 = 4
+3 + 3 = 6
+4 + 4 = 8
+```
+
+We want it to learn the pattern.
+
+Or:
+
+```text
+Email → Spam
+Email → Not Spam
+Email → Spam
+```
+
+We want it to learn how to classify emails.
+
+Or:
+
+```text
+"The capital of India is" → "Delhi"
+"The capital of France is" → "Paris"
+```
+
+We want an LLM to predict the next token.
+
+The central idea of machine learning is:
+
+```text
+Examples
+   ↓
+Model makes prediction
+   ↓
+Compare prediction with correct answer
+   ↓
+Calculate error
+   ↓
+Figure out how to improve
+   ↓
+Change internal numbers
+   ↓
+Try again
+   ↓
+Repeat many times
+```
+
+That is the foundation.
+
+---
+
+# 2. What Is a Model?
+
+A **model** is a mathematical system that takes an input and produces an output.
+
+Very simply:
+
+```text
+Input
+  ↓
+Model
+  ↓
+Output
+```
+
+## Example 1 — Calculator
+
+```text
+Input:
+2 + 3
+
+Model:
+Addition operation
+
+Output:
+5
+```
+
+A calculator is not normally called a machine-learning model, because it follows explicitly programmed rules.
+
+---
+
+## Example 2 — Spam Classifier
+
+```text
+Input:
+"Congratulations! You won $1,000,000!"
+
+Model
+   ↓
+Output:
+Spam
+```
+
+Here the model may have learned patterns from thousands or millions of examples.
+
+---
+
+## Example 3 — Image Classification
+
+```text
+Image
+  ↓
+Model
+  ↓
+Dog
+```
+
+---
+
+## Example 4 — LLM
+
+```text
+Prompt:
+Explain Kubernetes.
+
+       ↓
+
+LLM
+
+       ↓
+
+Generated explanation
+```
+
+The LLM is a model that performs enormous numbers of mathematical operations to produce predictions.
+
+---
+
+# 3. Traditional Programming vs Machine Learning
+
+This is one of the most important beginner concepts.
+
+## Traditional Programming
+
+You explicitly write the rules.
+
+```text
+Input + Rules → Output
+```
+
+For example:
+
+```python
+if age >= 18:
+    result = "Adult"
+else:
+    result = "Minor"
+```
+
+You wrote the rule.
+
+---
+
+## Machine Learning
+
+Instead of manually writing every rule, you provide examples.
+
+```text
+Examples
+   ↓
+Machine learning algorithm
+   ↓
+Learned model
+```
+
+Example:
+
+```text
+Email 1 → Spam
+Email 2 → Spam
+Email 3 → Not Spam
+Email 4 → Spam
+...
+```
+
+The model learns patterns from the examples.
+
+---
+
+# 4. What Does "Learning" Mean?
+
+This word can be misleading.
+
+A computer doesn't learn exactly like a human.
+
+For a neural network, learning primarily means:
+
+> **Adjusting numerical parameters so that the model performs better on its training objective.**
+
+Imagine a model contains:
+
+```text
+Parameter A = 0.31
+Parameter B = -0.72
+Parameter C = 1.44
+...
+```
+
+During training, these numbers are repeatedly adjusted.
+
+Eventually, the model's predictions become better.
+
+So:
+
+```text
+Learning
+=
+Changing parameters based on training feedback
+```
+
+---
+
+# 5. What Is a Neural Network?
+
+A neural network is a mathematical model made from many connected computational operations.
+
+A simplified neural network looks like:
+
+```text
+Input
+  ↓
+Layer 1
+  ↓
+Layer 2
+  ↓
+Layer 3
+  ↓
+Output
+```
+
+Each layer transforms the information it receives.
+
+A modern LLM is a very large neural network.
+
+---
+
+# 6. Why Is It Called a Neural Network?
+
+The name comes from inspiration from biological neural networks.
+
+But don't make the mistake of thinking:
+
+> "An artificial neural network works exactly like a human brain."
+
+It doesn't.
+
+An artificial neural network is a mathematical/computational system.
+
+The biological analogy is useful only at a very high level.
+
+---
+
+# 7. What Is a Layer?
+
+A layer is a collection of mathematical operations performed as part of the network.
+
+Imagine:
+
+```text
+Input
+ ↓
+Layer 1
+ ↓
+Layer 2
+ ↓
+Layer 3
+ ↓
+Output
+```
+
+Each layer transforms numerical representations.
+
+In a very simplified example:
+
+```text
+Input:
+[2, 5, 1]
+
+Layer 1
+↓
+[0.4, 1.2, -0.3]
+
+Layer 2
+↓
+[2.1, 0.7]
+
+Output
+↓
+[probabilities]
+```
+
+Real LLMs are much more complicated.
+
+---
+
+# 8. What Is a Neuron?
+
+A neuron is a basic mathematical computation unit in a neural network.
+
+A simplified neuron receives:
+
+```text
+x1
+x2
+x3
+```
+
+and combines them with weights:
+
+```text
+w1
+w2
+w3
+```
+
+Conceptually:
+
+```text
+x1 ──× w1 ──┐
+            │
+x2 ──× w2 ──┼──> Calculation → Output
+            │
+x3 ──× w3 ──┘
+```
+
+The calculation can be simplified as:
+
+```text
+output = x1*w1 + x2*w2 + x3*w3
+```
+
+Often there are additional operations such as a bias and activation function.
+
+---
+
+# 9. Simple Neuron Example
+
+Suppose:
+
+```text
+x1 = 2
+x2 = 3
+```
+
+and:
+
+```text
+w1 = 0.5
+w2 = 0.2
+```
+
+Then:
+
+```text
+output = (2 × 0.5) + (3 × 0.2)
+
+       = 1.0 + 0.6
+
+       = 1.6
+```
+
+This is a tiny example of the mathematical calculations that neural networks perform.
+
+A real neural network performs these operations on enormous numbers of values.
+
+---
+
+# 10. What Is a Weight?
+
+A **weight** is a numerical parameter used by the neural network.
+
+For example:
+
+```text
+w1 = 0.5
+w2 = 0.2
+w3 = -0.7
+```
+
+Weights affect how information is transformed.
+
+A beginner-friendly intuition:
+
+> A weight determines how strongly a particular input contributes to a calculation.
+
+But don't interpret every individual weight as a simple human-readable "fact."
+
+Modern neural networks distribute information across many parameters.
+
+---
+
+# 11. Why Do We Need Weights?
+
+Imagine this simple calculation:
+
+```text
+output = x1*w1 + x2*w2
+```
+
+If:
+
+```text
+w1 = 10
+w2 = 0.1
+```
+
+then `x1` has a much larger effect.
+
+If:
+
+```text
+w1 = 0.1
+w2 = 10
+```
+
+then `x2` has a much larger effect.
+
+During training, the model learns useful values for these parameters.
+
+---
+
+# 12. What Is a Bias?
+
+A neural network can also have a **bias**.
+
+A simplified neuron can be written as:
+
+```text
+output = x1*w1 + x2*w2 + b
+```
+
+where:
+
+```text
+b = bias
+```
+
+Example:
+
+```text
+x1 = 2
+w1 = 0.5
+b = 1
+
+output = (2 × 0.5) + 1
+       = 2
+```
+
+Bias gives the model another adjustable value.
+
+For a beginner:
+
+```text
+Weight
+→ controls contribution of input
+
+Bias
+→ provides an adjustable offset
+```
+
+---
+
+# 13. Parameters
+
+Now we can define an important word.
+
+## Parameter
+
+A parameter is a numerical value that the model learns during training.
+
+Examples:
+
+```text
+Weights
+Biases
+```
+
+So:
+
+```text
+Neural network
+    ↓
+Millions/billions of parameters
+```
+
+---
+
+# 14. What Does 7B Parameters Mean?
+
+If you see:
+
+```text
+7B model
+```
+
+it generally means:
+
+```text
+Approximately 7 billion parameters
+```
+
+Similarly:
+
+```text
+3B → approximately 3 billion
+7B → approximately 7 billion
+13B → approximately 13 billion
+70B → approximately 70 billion
+```
+
+These are enormous numbers.
+
+---
+
+# 15. Does More Parameters Always Mean Better?
+
+No.
+
+A model with more parameters is not automatically better.
+
+Quality depends on many factors:
+
+```text
+Architecture
+Training data
+Data quality
+Training method
+Number of training tokens
+Optimization
+Fine-tuning
+Inference methods
+Evaluation
+```
+
+Think:
+
+```text
+More parameters
+≠ automatically better intelligence
+```
+
+---
+
+# 16. Where Is the Model's "Knowledge"?
+
+This is a common beginner question.
+
+Suppose a model knows something about India.
+
+You might imagine:
+
+```text
+India → Delhi
+```
+
+stored like a database row.
+
+But a neural network is not simply a giant table of facts.
+
+Information is represented through patterns distributed across its parameters.
+
+Very simplified:
+
+```text
+Training data
+     ↓
+Learning process
+     ↓
+Parameter values
+     ↓
+Learned representations/patterns
+```
+
+This is why an LLM is fundamentally different from a normal relational database.
+
+---
+
+# 17. Database vs Neural Network
+
+## Database
+
+A database may explicitly store:
+
+```text
+country | capital
+--------|--------
+India   | Delhi
+France  | Paris
+Japan   | Tokyo
+```
+
+You query it:
+
+```sql
+SELECT capital
+FROM countries
+WHERE country = 'India';
+```
+
+Result:
+
+```text
+Delhi
+```
+
+---
+
+## Neural Network
+
+A neural network processes numerical representations:
+
+```text
+Input
+ ↓
+Many mathematical transformations
+ ↓
+Prediction
+```
+
+It does not normally execute a SQL lookup for every fact it knows.
+
+---
+
+# 18. Important Warning: LLM Knowledge Is Not a Database
+
+An LLM can sometimes produce:
+
+```text
+"Delhi is the capital of India."
+```
+
+but this does not mean it has a reliable database row that it can always retrieve.
+
+This matters because LLMs can:
+
+- be outdated
+- be uncertain
+- make mistakes
+- hallucinate
+- generate plausible but false statements
+
+This is one reason RAG and external tools are important.
+
+---
+
+# 19. What Is Training?
+
+Training is the process of adjusting the model's parameters so that it performs better at a particular objective.
+
+A simplified training loop:
+
+```text
+Training data
+     ↓
+Prediction
+     ↓
+Loss
+     ↓
+Gradients
+     ↓
+Parameter update
+     ↓
+Repeat
+```
+
+This loop may execute an enormous number of times.
+
+---
+
+# 20. What Is a Training Example?
+
+A training example is an item of data used during training.
+
+For an image classifier:
+
+```text
+Image of dog
++
+Label = dog
+```
+
+For spam detection:
+
+```text
+Email
++
+Label = spam
+```
+
+For language-model training:
+
+```text
+Text
++
+Next-token target
+```
+
+---
+
+# 21. LLM Training: Next-Token Prediction
+
+This is one of the most important concepts in this entire course.
+
+Suppose the text is:
+
+```text
+The cat sat on the mat.
+```
+
+The model can learn from many prediction positions.
+
+For example:
+
+```text
+Input:
+The
+
+Target:
+cat
+```
+
+Then:
+
+```text
+Input:
+The cat
+
+Target:
+sat
+```
+
+Then:
+
+```text
+Input:
+The cat sat
+
+Target:
+on
+```
+
+Then:
+
+```text
+Input:
+The cat sat on
+
+Target:
+the
+```
+
+Then:
+
+```text
+Input:
+The cat sat on the
+
+Target:
+mat
+```
+
+The model repeatedly learns to predict the next token.
+
+---
+
+# 22. Why Is Next-Token Prediction So Important?
+
+At first it sounds too simple:
+
+> "How can predicting the next word create a powerful AI?"
+
+Because predicting language accurately requires learning many patterns.
+
+To predict:
+
+```text
+The database administrator restarted the server because
+```
+
+the model needs to learn relationships involving:
+
+```text
+database
+administrator
+server
+restarted
+because
+```
+
+Similarly, code has patterns.
+
+Example:
+
+```python
+for user in users:
+    print(user.name)
+```
+
+To predict the next token, the model has to learn syntax and common programming structures.
+
+---
+
+# 23. Token vs Word
+
+An LLM doesn't necessarily process whole words.
+
+It processes **tokens**.
+
+A token can be:
+
+- a whole word
+- part of a word
+- punctuation
+- whitespace-related text
+- symbols
+- pieces of code
+
+For example, a tokenizer might represent:
+
+```text
+unbelievable
+```
+
+as something conceptually like:
+
+```text
+un + believe + able
+```
+
+The exact tokenization depends on the tokenizer.
+
+---
+
+# 24. Simple LLM Prediction Example
+
+Prompt:
+
+```text
+The capital of India is
+```
+
+The model may assign probabilities like:
+
+```text
+Delhi     → 90%
+Mumbai    → 3%
+London    → 1%
+Paris     → 1%
+Other     → 5%
+```
+
+These numbers are illustrative.
+
+The model is not simply saying:
+
+```text
+Answer = Delhi
+```
+
+Internally it produces scores/probabilities for possible next tokens.
+
+---
+
+# 25. What Is a Target?
+
+The target is the correct answer the training process expects.
+
+Example:
+
+```text
+Input:
+The capital of India is
+
+Target:
+Delhi
+```
+
+The model tries to assign a high probability to the target.
+
+---
+
+# 26. What Is a Prediction?
+
+The prediction is what the model currently thinks is likely.
+
+Example:
+
+```text
+Target:
+Delhi
+```
+
+Model prediction:
+
+```text
+Delhi     → 0.40
+Mumbai    → 0.30
+Paris     → 0.10
+London    → 0.05
+Other     → 0.15
+```
+
+The model is not very confident.
+
+Training should push it toward a better distribution.
+
+---
+
+# 27. What Is Loss?
+
+Now we need a way to answer:
+
+> **How wrong was the model?**
+
+That is what the **loss function** measures.
+
+Simple intuition:
+
+```text
+Good prediction
+→ low loss
+
+Bad prediction
+→ high loss
+```
+
+---
+
+# 28. Simple Loss Example
+
+Suppose the correct answer is:
+
+```text
+Delhi
+```
+
+Case A:
+
+```text
+Delhi → 99%
+```
+
+This is a very good prediction.
+
+So:
+
+```text
+Loss → low
+```
+
+Case B:
+
+```text
+Delhi → 1%
+```
+
+This is a poor prediction.
+
+So:
+
+```text
+Loss → high
+```
+
+---
+
+# 29. Why Not Just Use "Correct / Wrong"?
+
+We need more information.
+
+Consider these two predictions:
+
+```text
+Prediction A:
+Delhi → 51%
+
+Prediction B:
+Delhi → 0.1%
+```
+
+Both may be "wrong" if the model ultimately selects another token.
+
+But B is much worse.
+
+A probability-based loss can capture this difference.
+
+---
+
+# 30. Cross-Entropy Loss
+
+A common loss function used in language-model training is:
+
+> **Cross-entropy loss**
+
+At this level, remember:
+
+> Cross-entropy measures how well the model's predicted probability distribution matches the correct target.
+
+You do not need to memorize the mathematical formula yet.
+
+The important idea is:
+
+```text
+Correct target gets higher probability
+→ loss tends to decrease
+```
+
+---
+
+# 31. What Is a Forward Pass?
+
+The **forward pass** is when information moves through the network from input toward the output.
+
+For an LLM:
+
+```text
+Text
+ ↓
+Tokens
+ ↓
+Numerical representations
+ ↓
+Transformer layers
+ ↓
+Output scores
+ ↓
+Prediction
+```
+
+The model is essentially asking:
+
+> "Given what I have seen so far, what should come next?"
+
+---
+
+# 32. What Are Logits?
+
+Before converting scores into probabilities, a model produces raw numerical scores called:
+
+> **Logits**
+
+Example:
+
+```text
+Delhi     → 8.2
+Mumbai    → 5.1
+Paris     → 2.7
+London    → 1.9
+```
+
+These are not probabilities.
+
+---
+
+# 33. What Is Softmax?
+
+Softmax converts logits into a probability distribution.
+
+Conceptually:
+
+```text
+Logits
+   ↓
+Softmax
+   ↓
+Probabilities
+```
+
+For example:
+
+```text
+Delhi     → 95%
+Mumbai    → 4%
+Paris     → 0.7%
+London    → 0.3%
+```
+
+The exact values depend on the logits.
+
+---
+
+# 34. Forward Pass — Full Beginner Example
+
+Suppose:
+
+```text
+Input:
+The sky is
+```
+
+The model processes it.
+
+Conceptually:
+
+```text
+"The sky is"
+      ↓
+Tokenization
+      ↓
+Numerical representations
+      ↓
+Transformer layers
+      ↓
+Logits
+      ↓
+Softmax
+      ↓
+Probability distribution
+```
+
+Maybe:
+
+```text
+blue   → 80%
+clear  → 8%
+dark   → 4%
+green  → 0.5%
+...
+```
+
+The model then chooses/generates a token according to the decoding strategy.
+
+---
+
+# 35. What Happens When the Prediction Is Wrong?
+
+Suppose:
+
+```text
+Correct token:
+blue
+
+Model:
+green → 60%
+blue  → 10%
+```
+
+The model needs feedback.
+
+That feedback comes from:
+
+```text
+Loss
+```
+
+But loss alone isn't enough.
+
+We need to determine:
+
+> Which internal parameters should change, and by how much?
+
+That brings us to backpropagation.
+
+---
+
+# 36. What Is Backpropagation?
+
+**Backpropagation** is the process used to calculate gradients for the parameters of a neural network.
+
+Beginner intuition:
+
+```text
+Prediction
+   ↓
+Loss
+   ↓
+Trace the error backward
+   ↓
+Calculate how parameters affected the loss
+```
+
+The key word is:
+
+> **Gradient**
+
+---
+
+# 37. Backpropagation Is Not Simply "Running the Model Backwards"
+
+This is an important clarification.
+
+Forward:
+
+```text
+Input → Output
+```
+
+Backpropagation is not simply:
+
+```text
+Output → Input
+```
+
+Instead, it uses calculus, particularly the chain rule, to calculate how the loss changes with respect to parameters.
+
+In simple terms:
+
+> "If I slightly change this parameter, how does the loss change?"
+
+---
+
+# 38. What Is a Gradient?
+
+A gradient gives information about how a quantity changes when its inputs/parameters change.
+
+For training, we care about:
+
+```text
+How does LOSS change when a PARAMETER changes?
+```
+
+The gradient provides that information.
+
+---
+
+# 39. Simple Mountain Analogy
+
+Imagine you are standing on a mountain.
+
+You want to reach the lowest point.
+
+```text
+        High
+         /\
+        /  \
+       /    \
+      /      \
+     /        \
+    ↓
+  Low
+```
+
+The slope tells you which direction goes uphill.
+
+If you want to go downhill, you move in the opposite direction.
+
+A gradient provides analogous information mathematically.
+
+---
+
+# 40. Why Do We Need Gradients?
+
+Suppose a model has:
+
+```text
+7 billion parameters
+```
+
+We cannot just randomly change all 7 billion numbers.
+
+We need information about:
+
+```text
+Which parameters should change?
+In which direction?
+By approximately how much?
+```
+
+Gradients provide this information.
+
+---
+
+# 41. Simple Gradient Example
+
+Suppose:
+
+```text
+Parameter = 2.0
+```
+
+and the gradient is:
+
+```text
++0.5
+```
+
+This tells the optimizer that increasing this parameter would increase the loss locally.
+
+So the optimizer may decrease it.
+
+If:
+
+```text
+Gradient = -0.5
+```
+
+the local direction is opposite.
+
+The optimizer can use this information to update the parameter.
+
+---
+
+# 42. What Is Gradient Descent?
+
+Gradient descent is an optimization method.
+
+Its basic idea:
+
+> Move parameters in a direction that reduces the loss.
+
+Think:
+
+```text
+High loss
+   ↓
+Find downhill direction
+   ↓
+Take a small step
+   ↓
+Calculate again
+   ↓
+Take another step
+```
+
+Repeat.
+
+---
+
+# 43. Parameter Update Formula
+
+A simplified gradient-descent equation is:
+
+```text
+new_parameter
+=
+old_parameter
+-
+learning_rate × gradient
+```
+
+Example:
+
+```text
+old parameter = 1.0
+gradient      = 0.5
+learning rate = 0.1
+```
+
+Therefore:
+
+```text
+new parameter
+=
+1.0 - (0.1 × 0.5)
+
+=
+0.95
+```
+
+So:
+
+```text
+1.00 → 0.95
+```
+
+---
+
+# 44. What Is Learning Rate?
+
+The **learning rate** controls how large the update is.
+
+Imagine walking downhill.
+
+## Very large learning rate
+
+```text
+Huge steps
+```
+
+You may jump over the valley.
+
+## Very small learning rate
+
+```text
+Tiny steps
+```
+
+You may take forever to reach the bottom.
+
+Therefore:
+
+```text
+Learning rate
+=
+Size of parameter update
+```
+
+---
+
+# 45. Example of Learning Rate
+
+Suppose:
+
+```text
+Gradient = 0.5
+```
+
+### Learning rate = 0.1
+
+```text
+Update = 0.1 × 0.5
+       = 0.05
+```
+
+### Learning rate = 0.01
+
+```text
+Update = 0.01 × 0.5
+       = 0.005
+```
+
+The second update is much smaller.
+
+---
+
+# 46. Why Can a Large Learning Rate Be Dangerous?
+
+Suppose the ideal parameter is near:
+
+```text
+5
+```
+
+but your model takes huge steps:
+
+```text
+2
+→ 10
+→ -5
+→ 20
+→ -15
+→ ...
+```
+
+Training can become unstable.
+
+The model may fail to converge properly.
+
+---
+
+# 47. Why Can a Learning Rate Be Too Small?
+
+Suppose the model changes:
+
+```text
+0.0000001
+```
+
+at a time.
+
+Training may become extremely slow.
+
+So training engineers have to choose appropriate optimization settings.
+
+---
+
+# 48. What Is an Optimizer?
+
+An optimizer controls how parameters are updated using gradient information.
+
+Conceptually:
+
+```text
+Loss
+ ↓
+Gradients
+ ↓
+Optimizer
+ ↓
+Updated parameters
+```
+
+Examples:
+
+```text
+SGD
+Adam
+AdamW
+```
+
+---
+
+# 49. What Is SGD?
+
+SGD means:
+
+> **Stochastic Gradient Descent**
+
+The basic idea:
+
+```text
+Take a batch
+ ↓
+Calculate predictions
+ ↓
+Calculate loss
+ ↓
+Calculate gradients
+ ↓
+Update parameters
+```
+
+Then repeat.
+
+The word "stochastic" comes from using sampled batches rather than necessarily calculating gradients over the entire dataset at once.
+
+---
+
+# 50. What Is Adam?
+
+Adam is a widely used optimization algorithm.
+
+It uses gradient information together with additional running statistics to adapt updates.
+
+For a beginner:
+
+```text
+SGD
+→ Basic optimization approach
+
+Adam
+→ More sophisticated adaptive optimization approach
+
+AdamW
+→ Widely used optimizer variant for modern deep learning
+```
+
+Don't worry about the mathematics yet.
+
+---
+
+# 51. What Is a Batch?
+
+Suppose we have:
+
+```text
+1,000,000 training examples
+```
+
+We don't necessarily process all of them simultaneously.
+
+Instead:
+
+```text
+Batch 1 → 32 examples
+Batch 2 → 32 examples
+Batch 3 → 32 examples
+...
+```
+
+A **batch** is a group of training examples processed together.
+
+---
+
+# 52. Why Use Batches?
+
+Suppose your dataset contains:
+
+```text
+1 billion examples
+```
+
+Trying to process everything at once would require enormous memory.
+
+Instead:
+
+```text
+Dataset
+ ↓
+Small batch
+ ↓
+GPU
+ ↓
+Calculate
+ ↓
+Next batch
+```
+
+This makes training computationally manageable.
+
+---
+
+# 53. Batch Size
+
+If:
+
+```text
+Batch size = 32
+```
+
+the model processes approximately 32 examples together.
+
+If:
+
+```text
+Batch size = 1024
+```
+
+it processes approximately 1024 examples together.
+
+Larger batches generally require more memory.
+
+---
+
+# 54. Batch Size Example
+
+Suppose:
+
+```text
+Dataset = 1,000 examples
+Batch size = 100
+```
+
+Then approximately:
+
+```text
+Batch 1 → examples 1–100
+Batch 2 → examples 101–200
+...
+Batch 10 → examples 901–1000
+```
+
+So:
+
+```text
+10 batches
+```
+
+are needed for one pass through the dataset.
+
+---
+
+# 55. What Is a Training Step?
+
+A training step generally represents one parameter-update operation.
+
+Simplified:
+
+```text
+Batch
+ ↓
+Forward pass
+ ↓
+Loss
+ ↓
+Backpropagation
+ ↓
+Optimizer
+ ↓
+Parameter update
+```
+
+That is one training step.
+
+---
+
+# 56. What Is an Epoch?
+
+An **epoch** is approximately one complete pass through the training dataset.
+
+Example:
+
+```text
+Dataset = 1,000 examples
+Batch size = 100
+```
+
+Approximately:
+
+```text
+10 training steps
+=
+1 epoch
+```
+
+If we train for:
+
+```text
+5 epochs
+```
+
+we process the dataset approximately five times.
+
+---
+
+# 57. Batch vs Step vs Epoch
+
+Memorize this table:
+
+| Term | Meaning |
+|---|---|
+| Batch | Group of training examples |
+| Step | One parameter-update operation |
+| Epoch | One approximate pass through the dataset |
+
+Example:
+
+```text
+10,000 examples
+Batch size = 100
+
+≈ 100 steps
+≈ 1 epoch
+```
+
+---
+
+# 58. Complete Training Loop
+
+Now combine everything:
+
+```text
+                 TRAINING
+
+              Training data
+                    ↓
+                  Batch
+                    ↓
+              Forward pass
+                    ↓
+               Prediction
+                    ↓
+                  Loss
+                    ↓
+             Backpropagation
+                    ↓
+                Gradients
+                    ↓
+                Optimizer
+                    ↓
+           Update parameters
+                    ↓
+              Next batch
+                    ↓
+                 Repeat
+```
+
+This is the most important diagram of Day 4.
+
+---
+
+# 59. A Complete Tiny Example
+
+Let's imagine a very small model.
+
+We want it to learn:
+
+```text
+y = 2x
+```
+
+Training examples:
+
+```text
+x = 1 → y = 2
+x = 2 → y = 4
+x = 3 → y = 6
+x = 4 → y = 8
+```
+
+Suppose the model starts with:
+
+```text
+y = 0.5x
+```
+
+---
+
+# 60. First Prediction
+
+For:
+
+```text
+x = 4
+```
+
+the model predicts:
+
+```text
+0.5 × 4 = 2
+```
+
+Correct answer:
+
+```text
+8
+```
+
+So:
+
+```text
+Prediction = 2
+Target     = 8
+```
+
+The prediction is poor.
+
+---
+
+# 61. Calculate Loss
+
+We need a loss function.
+
+For a simple regression example, we might use squared error:
+
+```text
+Loss = (prediction - target)²
+```
+
+So:
+
+```text
+Loss = (2 - 8)²
+     = (-6)²
+     = 36
+```
+
+Large error.
+
+---
+
+# 62. Calculate Gradient
+
+The gradient tells us how changing the parameter affects the loss.
+
+The exact calculation depends on the model and loss function.
+
+The important concept is:
+
+```text
+Loss
+ ↓
+Gradient tells us how to change parameter
+```
+
+---
+
+# 63. Update the Parameter
+
+Suppose the optimizer determines that the parameter should increase.
+
+Maybe:
+
+```text
+0.5
+→
+0.8
+```
+
+Now the model is:
+
+```text
+y = 0.8x
+```
+
+For x = 4:
+
+```text
+prediction = 3.2
+```
+
+Better than:
+
+```text
+2
+```
+
+Still not correct.
+
+Training continues.
+
+---
+
+# 64. More Training
+
+The parameter might gradually become:
+
+```text
+0.5
+→ 0.8
+→ 1.1
+→ 1.4
+→ 1.7
+→ 1.9
+→ 2.0
+```
+
+Eventually:
+
+```text
+y ≈ 2x
+```
+
+The model has learned the relationship.
+
+This is an extremely simplified example, but the basic training concept is the same.
+
+---
+
+# 65. How Does This Relate to an LLM?
+
+Instead of learning:
+
+```text
+y = 2x
+```
+
+an LLM may learn to predict:
+
+```text
+The capital of India is → Delhi
+```
+
+or:
+
+```text
+def add(a, b):
+    return → a + b
+```
+
+or:
+
+```text
+The cat sat on the → mat
+```
+
+The model has an enormous number of parameters instead of one simple number.
+
+---
+
+# 66. LLM Training Example
+
+Training text:
+
+```text
+The cat drinks milk.
+```
+
+The tokenizer converts it into tokens.
+
+Conceptually:
+
+```text
+The | cat | drinks | milk
+```
+
+Training positions may look like:
+
+```text
+Input              Target
+
+The                cat
+
+The cat             drinks
+
+The cat drinks      milk
+```
+
+The model predicts the target at each position.
+
+---
+
+# 67. Prediction Example
+
+Suppose:
+
+```text
+Input:
+The cat drinks
+```
+
+Model outputs:
+
+```text
+milk       → 40%
+water      → 25%
+juice      → 10%
+coffee     → 2%
+...
+```
+
+The target is:
+
+```text
+milk
+```
+
+The model should learn to increase the probability of `milk`.
+
+---
+
+# 68. Loss for LLM Prediction
+
+If:
+
+```text
+Target = milk
+```
+
+and the model gives:
+
+```text
+milk = 40%
+```
+
+that's better than:
+
+```text
+milk = 0.01%
+```
+
+Cross-entropy loss gives the training process a numerical signal reflecting this.
+
+---
+
+# 69. Backpropagation in an LLM
+
+Now imagine the LLM has billions of parameters.
+
+The loss tells us:
+
+```text
+The prediction was not good enough.
+```
+
+Backpropagation calculates gradients throughout the network.
+
+Conceptually:
+
+```text
+Loss
+ ↓
+Output layer
+ ↓
+Earlier layer
+ ↓
+Earlier layer
+ ↓
+...
+ ↓
+All relevant parameters
+```
+
+The result is a huge collection of gradient values.
+
+---
+
+# 70. Optimizer Updates Billions of Parameters
+
+The optimizer uses gradient information to update parameters.
+
+Conceptually:
+
+```text
+Parameter 1:
+0.431 → 0.429
+
+Parameter 2:
+-0.821 → -0.818
+
+Parameter 3:
+1.239 → 1.241
+
+...
+
+Billions of parameters
+```
+
+The changes can be tiny.
+
+But there are enormous numbers of them.
+
+Repeated over massive amounts of training data, these changes produce a trained model.
+
+---
+
+# 71. Why Are the Updates Usually Small?
+
+Imagine changing billions of parameters drastically after every example.
+
+Training could become unstable.
+
+Instead, optimization generally performs controlled updates.
+
+Think:
+
+```text
+Small improvement
++
+Small improvement
++
+Small improvement
++
+...
+=
+Large learning effect over time
+```
+
+---
+
+# 72. What Is Pretraining?
+
+**Pretraining** is the large initial training stage used to build a general-purpose model.
+
+A simplified pipeline:
+
+```text
+Huge text/code dataset
+       ↓
+Tokenization
+       ↓
+Next-token prediction
+       ↓
+Loss
+       ↓
+Backpropagation
+       ↓
+Parameter updates
+       ↓
+Repeat
+```
+
+The result is a pretrained/base model.
+
+---
+
+# 73. What Can Be Learned During Pretraining?
+
+The model can learn patterns involving:
+
+```text
+Grammar
+Vocabulary
+Syntax
+Code
+Writing styles
+Concept relationships
+Common facts
+Mathematical patterns
+Programming patterns
+Language structure
+```
+
+The model isn't normally given a list saying:
+
+```text
+Learn grammar.
+Learn Python.
+Learn geography.
+Learn English.
+```
+
+Instead, many capabilities emerge from training on large amounts of data.
+
+---
+
+# 74. Why Does Data Quality Matter?
+
+Imagine training on:
+
+```text
+High-quality books
+Good documentation
+Reliable code
+Educational material
+Well-written text
+```
+
+versus:
+
+```text
+Spam
+Duplicates
+Corrupted text
+Low-quality pages
+Incorrect code
+```
+
+Poor training data can negatively affect the resulting model.
+
+Therefore:
+
+```text
+Data engineering
+=
+Critical part of AI engineering
+```
+
+---
+
+# 75. Typical Data Preparation Pipeline
+
+A simplified production pipeline might look like:
+
+```text
+Raw data
+   ↓
+Collection
+   ↓
+Cleaning
+   ↓
+Filtering
+   ↓
+Deduplication
+   ↓
+Quality checks
+   ↓
+Formatting
+   ↓
+Tokenization
+   ↓
+Training dataset
+```
+
+The exact pipeline depends heavily on the model and organization.
+
+---
+
+# 76. What Is Fine-Tuning?
+
+Suppose we already have a powerful pretrained model.
+
+Maybe it knows:
+
+```text
+English
+Python
+Java
+Databases
+Cloud
+General knowledge
+```
+
+But we want it to behave particularly well for:
+
+```text
+Customer support
+Medical summarization
+Legal document classification
+SQL generation
+Company-specific workflows
+```
+
+We can perform additional training.
+
+This is called:
+
+# Fine-tuning
+
+---
+
+# 77. Pretraining vs Fine-Tuning
+
+## Pretraining
+
+```text
+Massive general dataset
+       ↓
+General-purpose model
+```
+
+## Fine-tuning
+
+```text
+Pretrained model
+       ↓
+Smaller targeted dataset
+       ↓
+Specialized behavior
+```
+
+---
+
+# 78. Supervised Fine-Tuning (SFT)
+
+SFT means:
+
+> **Supervised Fine-Tuning**
+
+Suppose we provide:
+
+```text
+Instruction:
+Explain Kubernetes in simple language.
+
+Expected response:
+Kubernetes is a platform...
+```
+
+Another:
+
+```text
+Instruction:
+Explain Docker.
+
+Expected response:
+Docker is a containerization platform...
+```
+
+The model is trained using these examples.
+
+---
+
+# 79. Why Fine-Tune?
+
+Possible reasons include:
+
+```text
+Better instruction following
+Specific output format
+Domain-specific behavior
+Specialized classification
+Style adaptation
+Task-specific performance
+```
+
+For example, suppose a company wants every support response in JSON:
+
+```json
+{
+  "issue": "...",
+  "severity": "...",
+  "recommended_action": "..."
+}
+```
+
+Fine-tuning may help the model consistently follow such patterns.
+
+However, fine-tuning is not always the best solution.
+
+---
+
+# 80. Prompting vs Fine-Tuning
+
+## Prompting
+
+You tell the model what to do:
+
+```text
+"Answer in JSON.
+Use these fields:
+name, severity, action."
+```
+
+The model's weights do not change.
+
+---
+
+## Fine-Tuning
+
+You train the model further.
+
+Conceptually:
+
+```text
+Training examples
+ ↓
+Loss
+ ↓
+Backpropagation
+ ↓
+Parameter updates
+```
+
+The model's parameters change.
+
+---
+
+# 81. What Is RAG?
+
+RAG means:
+
+> **Retrieval-Augmented Generation**
+
+Suppose your company has:
+
+```text
+10,000 internal documents
+```
+
+You want an AI assistant to answer questions using them.
+
+Instead of retraining the LLM every time a document changes, you can retrieve relevant documents at query time.
+
+Simplified:
+
+```text
+User question
+      ↓
+Retriever
+      ↓
+Relevant documents
+      ↓
+Relevant chunks
+      ↓
+Prompt + retrieved context
+      ↓
+LLM
+      ↓
+Answer
+```
+
+---
+
+# 82. Example of RAG
+
+User asks:
+
+```text
+What is our company's leave policy?
+```
+
+The LLM's pretrained knowledge may not contain your company's latest policy.
+
+RAG can:
+
+```text
+Question
+ ↓
+Search company documentation
+ ↓
+Find leave-policy document
+ ↓
+Extract relevant section
+ ↓
+Give section to LLM
+ ↓
+Generate answer
+```
+
+This is extremely useful in enterprise AI.
+
+---
+
+# 83. RAG vs Fine-Tuning
+
+This distinction is extremely important for an AI engineer.
+
+| Requirement | Prompting | RAG | Fine-tuning |
+|---|---:|---:|---:|
+| Change instructions | Excellent | Good | Possible |
+| Use current documents | Weak | Excellent | Poor |
+| Company knowledge | Weak | Excellent | Possible |
+| Change behavior/style | Good | Good | Excellent |
+| No weight changes | Yes | Yes | No |
+| Frequently changing data | Good | Excellent | Poor |
+| Specialized behavior | Moderate | Moderate | Excellent |
+
+---
+
+# 84. Simple Decision Rule
+
+If you think:
+
+> "The model needs access to information."
+
+Think:
+
+```text
+RAG
+```
+
+If you think:
+
+> "The model needs to behave differently."
+
+Think:
+
+```text
+Fine-tuning
+```
+
+If you think:
+
+> "I just need to give it better instructions."
+
+Think:
+
+```text
+Prompting
+```
+
+This is simplified, but it is a very useful starting point.
+
+---
+
+# 85. What Is RLHF?
+
+RLHF means:
+
+> **Reinforcement Learning from Human Feedback**
+
+Imagine the model generates:
+
+```text
+Response A
+Response B
+```
+
+Humans prefer:
+
+```text
+Response A
+```
+
+The training process can use human preference information to encourage the model toward preferred behavior.
+
+Conceptually:
+
+```text
+Model responses
+      ↓
+Human preferences
+      ↓
+Reward/preference signal
+      ↓
+Optimization
+      ↓
+Improved behavior
+```
+
+---
+
+# 86. Why Human Feedback?
+
+Suppose two answers are factually similar.
+
+Answer A:
+
+```text
+Long, confusing, badly structured
+```
+
+Answer B:
+
+```text
+Clear, concise, useful
+```
+
+Humans may strongly prefer B.
+
+Preference-based training can help models learn these behavioral qualities.
+
+---
+
+# 87. What Is DPO?
+
+DPO means:
+
+> **Direct Preference Optimization**
+
+Suppose:
+
+```text
+Question
+ ↓
+Response A → preferred
+Response B → rejected
+```
+
+DPO directly trains the model using preference pairs.
+
+At beginner level:
+
+```text
+SFT
+→ Learn from desired examples
+
+RLHF
+→ Learn using human preference/reward signals
+
+DPO
+→ Directly optimize preference pairs
+```
+
+---
+
+# 88. Training vs Inference
+
+This is another critical distinction.
+
+## Training
+
+The model learns.
+
+```text
+Data
+ ↓
+Prediction
+ ↓
+Loss
+ ↓
+Backpropagation
+ ↓
+Gradients
+ ↓
+Parameter update
+```
+
+## Inference
+
+The model is used.
+
+```text
+Prompt
+ ↓
+Model
+ ↓
+Prediction
+ ↓
+Output
+```
+
+During normal inference, the model's weights are generally not updated.
+
+---
+
+# 89. Example: Asking ChatGPT a Question
+
+You ask:
+
+```text
+What is Kubernetes?
+```
+
+Conceptually:
+
+```text
+Prompt
+ ↓
+Tokenization
+ ↓
+Model
+ ↓
+Next-token prediction
+ ↓
+Next token
+ ↓
+Next prediction
+ ↓
+...
+ ↓
+Answer
+```
+
+The model is generating output.
+
+It is not normally retraining itself after every question.
+
+---
+
+# 90. Training vs Inference Table
+
+| Feature | Training | Inference |
+|---|---|---|
+| Purpose | Learn | Generate |
+| Parameters | Updated | Usually fixed |
+| Loss | Used | Not used for weight updates |
+| Backpropagation | Yes | No |
+| Optimizer | Yes | No |
+| Dataset | Training data | User/application input |
+| Compute | Very expensive | Usually cheaper |
+| Frequency | During model creation/update | Every request |
+
+---
+
+# 91. Why Is Training So Expensive?
+
+A large model may contain:
+
+```text
+Billions of parameters
+```
+
+Training requires repeated operations across:
+
+```text
+Huge datasets
++
+Many batches
++
+Many training steps
+```
+
+Therefore organizations need:
+
+```text
+Large GPU clusters
+Fast networking
+Large memory
+High-speed storage
+Electricity
+Cooling
+Monitoring
+Distributed training software
+```
+
+---
+
+# 92. Why Are GPUs Useful?
+
+Neural-network operations contain enormous amounts of parallel numerical computation.
+
+A simplified intuition:
+
+```text
+CPU:
+Small number of powerful general-purpose cores
+
+GPU:
+Large number of parallel compute units
+```
+
+Neural-network workloads can benefit enormously from parallelism.
+
+---
+
+# 93. Why Multiple GPUs?
+
+Suppose a model is too large for one GPU.
+
+We can distribute the model and/or training computation.
+
+Simplified:
+
+```text
+Large Model
+     ↓
++----+----+----+----+
+↓    ↓    ↓    ↓
+GPU1 GPU2 GPU3 GPU4
+```
+
+Real distributed training uses sophisticated techniques such as:
+
+- Data parallelism
+- Tensor parallelism
+- Pipeline parallelism
+- Distributed data parallelism
+- Sharding
+
+These will become important later.
+
+---
+
+# 94. What Is Overfitting?
+
+Imagine the model sees:
+
+```text
+Training examples:
+A
+B
+C
+D
+```
+
+It becomes extremely good at memorizing those exact examples.
+
+But when it sees:
+
+```text
+E
+```
+
+it performs badly.
+
+This is:
+
+# Overfitting
+
+Simple intuition:
+
+```text
+Memorization
+   ↓
+Excellent training performance
+   ↓
+Poor performance on unseen data
+```
+
+---
+
+# 95. What Is Generalization?
+
+Generalization means:
+
+> Performing well on examples the model has not directly seen during training.
+
+Example:
+
+Training:
+
+```text
+2 + 2 = 4
+3 + 3 = 6
+4 + 4 = 8
+```
+
+We want the model to understand the underlying pattern rather than merely memorize those three answers.
+
+Then:
+
+```text
+5 + 5 = ?
+```
+
+It should generalize:
+
+```text
+10
+```
+
+---
+
+# 96. What Is Underfitting?
+
+Underfitting means the model hasn't learned enough from the training data.
+
+Conceptually:
+
+```text
+Training performance → Poor
+New-data performance → Poor
+```
+
+So:
+
+```text
+Underfitting
+→ Didn't learn enough
+```
+
+while:
+
+```text
+Overfitting
+→ Learned training data too specifically
+```
+
+---
+
+# 97. Training, Validation and Test Data
+
+Traditional ML often separates data into:
+
+```text
+Dataset
+ ├── Training
+ ├── Validation
+ └── Test
+```
+
+## Training data
+
+Used to update parameters.
+
+## Validation data
+
+Used to evaluate/tune decisions during development.
+
+## Test data
+
+Used for final evaluation.
+
+The exact methodology for large language models can be more complex.
+
+---
+
+# 98. Parameters vs Hyperparameters
+
+This distinction is essential.
+
+## Parameters
+
+Learned by the model.
+
+Examples:
+
+```text
+Weights
+Biases
+```
+
+## Hyperparameters
+
+Chosen/configured by engineers.
+
+Examples:
+
+```text
+Learning rate
+Batch size
+Number of training steps
+Optimizer
+Training schedule
+```
+
+Easy rule:
+
+> **Parameters are learned. Hyperparameters are configured.**
+
+---
+
+# 99. Example: Parameter vs Hyperparameter
+
+Suppose:
+
+```text
+Learning rate = 0.0001
+```
+
+This is configured by the training setup.
+
+Therefore:
+
+```text
+Hyperparameter
+```
+
+But:
+
+```text
+Weight = 0.347
+```
+
+was learned through training.
+
+Therefore:
+
+```text
+Parameter
+```
+
+---
+
+# 100. What Are Model Weights?
+
+After training, the learned parameters are stored as model weights.
+
+Simplified:
+
+```text
+Training
+ ↓
+Learn parameters
+ ↓
+Save parameters
+ ↓
+Model weights
+```
+
+A simplified mental model:
+
+```text
+Model architecture
++
+Weights
+=
+Trained model
+```
+
+---
+
+# 101. Why Are Model Files Large?
+
+Suppose a model has:
+
+```text
+7 billion parameters
+```
+
+If each parameter takes 4 bytes:
+
+```text
+7,000,000,000 × 4
+≈ 28 GB
+```
+
+This is a simplified calculation because real model storage also depends on metadata, architecture, formats, sharding and other details.
+
+But it gives you the intuition:
+
+> **More parameters require more memory/storage.**
+
+---
+
+# 102. Precision
+
+You will see terms like:
+
+```text
+FP32
+FP16
+BF16
+INT8
+INT4
+```
+
+These describe numerical representation.
+
+For example:
+
+```text
+FP32
+→ 32-bit floating point
+
+FP16
+→ 16-bit floating point
+
+BF16
+→ 16-bit floating point format
+
+INT8
+→ 8-bit integer
+
+INT4
+→ 4-bit integer
+```
+
+---
+
+# 103. Why Does Precision Matter?
+
+Lower precision can reduce:
+
+```text
+Memory usage
+Storage
+Bandwidth requirements
+Sometimes computation cost
+```
+
+But it can also affect:
+
+```text
+Numerical accuracy
+Model quality
+Stability
+```
+
+We'll study this in detail later.
+
+---
+
+# 104. What Is Quantization?
+
+Quantization means representing model values using fewer bits.
+
+For example:
+
+```text
+FP16
+ ↓
+INT8
+```
+
+or:
+
+```text
+FP16
+ ↓
+INT4
+```
+
+This can dramatically reduce memory requirements.
+
+This is particularly important when running LLMs locally.
+
+---
+
+# 105. Why Is Quantization Important for Local AI?
+
+Suppose a model requires a large amount of memory.
+
+Your local machine may not have enough available memory.
+
+Quantization can make a model much smaller.
+
+Conceptually:
+
+```text
+Large model
+     ↓
+Quantization
+     ↓
+Smaller representation
+     ↓
+Can potentially run on smaller hardware
+```
+
+This is one reason local LLM tools often provide:
+
+```text
+4-bit
+8-bit
+16-bit
+```
+
+variants.
+
+---
+
+# 106. What Is Model Inference?
+
+Inference means using a trained model to generate a prediction.
+
+Example:
+
+```text
+Prompt:
+Write a Python function to add two numbers.
+
+      ↓
+
+Trained LLM
+
+      ↓
+
+Generated Python code
+```
+
+No parameter learning is required for normal inference.
+
+---
+
+# 107. How Does an LLM Generate a Sentence?
+
+This is very important.
+
+Suppose:
+
+```text
+Prompt:
+The sky is
+```
+
+The model predicts:
+
+```text
+blue
+```
+
+Now the input becomes conceptually:
+
+```text
+The sky is blue
+```
+
+Then it predicts another token.
+
+Maybe:
+
+```text
+today
+```
+
+Then:
+
+```text
+The sky is blue today
+```
+
+Then another token.
+
+This continues until generation stops.
+
+So generation is approximately:
+
+```text
+Predict token
+ ↓
+Add token to context
+ ↓
+Predict next token
+ ↓
+Add token
+ ↓
+Repeat
+```
+
+---
+
+# 108. Why Is It Called Autoregressive Generation?
+
+Because the model uses previously generated output as part of the input for the next prediction.
+
+Conceptually:
+
+```text
+Token 1
+ ↓
+Token 2
+ ↓
+Token 3
+ ↓
+Token 4
+ ↓
+...
+```
+
+The model generates sequentially.
+
+Many popular LLMs use this autoregressive approach.
+
+---
+
+# 109. Training vs Generation
+
+During training:
+
+```text
+Known text
+ ↓
+Predict target
+ ↓
+Calculate loss
+```
+
+During generation:
+
+```text
+Prompt
+ ↓
+Predict next token
+ ↓
+Use generated token
+ ↓
+Predict next token
+ ↓
+Repeat
+```
+
+This difference is extremely important.
+
+---
+
+# 110. Why Can an LLM Hallucinate?
+
+Because the model's fundamental generation mechanism is prediction.
+
+It is trying to generate plausible continuations.
+
+It is not automatically checking every statement against a trusted database.
+
+Therefore it can produce:
+
+```text
+Fluent
+Confident
+Plausible
+Wrong
+```
+
+answers.
+
+This is why AI systems often need:
+
+```text
+RAG
+Tools
+Search
+Databases
+Validation
+Guardrails
+Evaluation
+```
+
+---
+
+# 111. Example of Hallucination
+
+Ask:
+
+```text
+What is the population of a tiny village in 2026?
+```
+
+If the model has no reliable current source, it may still produce a number.
+
+That number can sound believable but be completely wrong.
+
+A better architecture might be:
+
+```text
+Question
+ ↓
+Trusted database/search
+ ↓
+Current data
+ ↓
+LLM
+ ↓
+Answer
+```
+
+---
+
+# 112. RAG as a Solution
+
+Suppose your organization has internal documentation.
+
+Instead of expecting the model's parameters to contain all current information:
+
+```text
+User question
+ ↓
+Retriever
+ ↓
+Internal documentation
+ ↓
+Relevant chunks
+ ↓
+LLM
+ ↓
+Answer
+```
+
+This gives the model additional context at inference time.
+
+---
+
+# 113. Important Difference: RAG Does Not Normally Retrain the Model
+
+This is a very important point.
+
+With RAG:
+
+```text
+Documents
+ ↓
+Retrieved at query time
+ ↓
+Inserted into context
+ ↓
+Model answers
+```
+
+The model weights usually remain unchanged.
+
+With fine-tuning:
+
+```text
+Training data
+ ↓
+Loss
+ ↓
+Backpropagation
+ ↓
+Weight updates
+```
+
+The model weights change.
+
+---
+
+# 114. Three Different Ways to Improve an AI System
+
+## 1. Prompt Engineering
+
+Change:
+
+```text
+Instructions
+```
+
+Example:
+
+```text
+"Answer as a senior cloud engineer.
+Give examples.
+Use a table."
+```
+
+No weight updates.
+
+---
+
+## 2. RAG
+
+Add external knowledge:
+
+```text
+Question
+ ↓
+Retrieve relevant information
+ ↓
+Put information into prompt
+ ↓
+LLM
+```
+
+No normal weight update.
+
+---
+
+## 3. Fine-Tuning
+
+Change model behavior through additional training:
+
+```text
+Examples
+ ↓
+Training
+ ↓
+Updated weights
+```
+
+---
+
+# 115. Easy Analogy
+
+Imagine an employee.
+
+## Prompting
+
+You tell the employee:
+
+> "Please answer customers politely."
+
+## RAG
+
+You give the employee access to:
+
+> "Company documentation and current policies."
+
+## Fine-tuning
+
+You train the employee extensively to behave in a particular specialized way.
+
+This analogy is not perfect, but it is useful.
+
+---
+
+# 116. What Is an Embedding?
+
+You will hear this word constantly in RAG systems.
+
+An embedding converts an item such as text into a vector.
+
+Conceptually:
+
+```text
+Text
+ ↓
+Embedding model
+ ↓
+[0.12, -0.42, 0.87, ...]
+```
+
+The vector represents useful semantic information.
+
+For example:
+
+```text
+"How do I reset my password?"
+```
+
+and:
+
+```text
+"I forgot my password. How can I change it?"
+```
+
+may produce vectors that are relatively close in embedding space.
+
+We'll study embeddings and vector databases in a later day.
+
+---
+
+# 117. What Is a Vector Database?
+
+A vector database stores/searches vector representations.
+
+RAG often looks like:
+
+```text
+Documents
+ ↓
+Chunking
+ ↓
+Embeddings
+ ↓
+Vector database
+```
+
+Then:
+
+```text
+User question
+ ↓
+Question embedding
+ ↓
+Similarity search
+ ↓
+Relevant chunks
+ ↓
+LLM
+```
+
+This will become one of the most important architectures for enterprise AI engineering.
+
+---
+
+# 118. What Is a Context Window?
+
+You already learned this in Day 1.
+
+The context window is the amount of tokenized information the model can consider within a request/context.
+
+Conceptually:
+
+```text
+System instructions
++
+User prompt
++
+Conversation history
++
+Retrieved documents
++
+Generated content
+```
+
+all consume context.
+
+This becomes extremely important in RAG.
+
+---
+
+# 119. Why Does Context Window Matter for RAG?
+
+Suppose you retrieve:
+
+```text
+1,000 pages
+```
+
+and try to put everything into the prompt.
+
+That may be impossible or inefficient.
+
+A better RAG system:
+
+```text
+User question
+ ↓
+Retrieve only relevant chunks
+ ↓
+Put relevant context into prompt
+ ↓
+LLM
+```
+
+So retrieval quality matters enormously.
+
+---
+
+# 120. What Is an AI Engineer Actually Doing?
+
+Now connect the theory to engineering.
+
+An AI engineer may need to build:
+
+```text
+Data pipeline
+      ↓
+Document processing
+      ↓
+Chunking
+      ↓
+Embeddings
+      ↓
+Vector database
+      ↓
+Retriever
+      ↓
+Prompt construction
+      ↓
+LLM
+      ↓
+Tool calls
+      ↓
+Output validation
+      ↓
+Application
+      ↓
+Monitoring
+```
+
+You don't need to train a foundation model from scratch to be an AI engineer.
+
+---
+
+# 121. Foundation Model Training vs AI Application Engineering
+
+## Foundation model engineer
+
+May work on:
+
+```text
+Architecture
+Distributed training
+GPU clusters
+Training data
+Optimization
+Pretraining
+Fine-tuning
+Model evaluation
+```
+
+## AI application engineer
+
+May work on:
+
+```text
+RAG
+Agents
+Prompt engineering
+LLM APIs
+Tool calling
+Vector databases
+Evaluation
+Guardrails
+Observability
+Production deployment
+```
+
+Both are AI engineering, but the skill sets overlap only partially.
+
+---
+
+# 122. What Is an Agent?
+
+You will study this later in detail.
+
+At a very high level:
+
+```text
+LLM
++
+Tools
++
+Memory/state
++
+Decision loop
+```
+
+Example:
+
+```text
+User:
+Find my failed AWS deployments and create a summary.
+
+Agent
+ ↓
+Use AWS tool
+ ↓
+Find deployments
+ ↓
+Analyze logs
+ ↓
+Generate summary
+```
+
+The LLM becomes part of a larger software system.
+
+---
+
+# 123. Why Is Day 4 Important for Agentic AI?
+
+Agents are not magic.
+
+They are built on the same fundamentals:
+
+```text
+Model
+ ↓
+Prediction
+ ↓
+Context
+ ↓
+Tools
+ ↓
+Reasoning/decision process
+ ↓
+Action
+```
+
+To engineer agents well, you need to understand what the underlying model can and cannot do.
+
+---
+
+# 124. One Huge Mental Model
+
+Keep these three layers separate.
+
+## Layer 1 — Model
+
+```text
+LLM
+```
+
+The neural network.
+
+## Layer 2 — Knowledge
+
+```text
+Prompt
+RAG
+Databases
+APIs
+Tools
+```
+
+Information available to the model.
+
+## Layer 3 — Application
+
+```text
+Backend
+Frontend
+Agent
+Authentication
+Monitoring
+Business logic
+```
+
+The complete product.
+
+---
+
+# 125. Another Important Mental Model
+
+Think of an LLM as:
+
+```text
+A very large learned mathematical function
+```
+
+Input:
+
+```text
+Tokens + context
+```
+
+Output:
+
+```text
+Probability distribution / next-token scores
+```
+
+Generation repeatedly calls this prediction process.
+
+---
+
+# 126. Complete LLM Lifecycle
+
+Now connect everything.
+
+```text
+                  RAW DATA
+                     ↓
+               DATA CLEANING
+                     ↓
+               DATA FILTERING
+                     ↓
+                DEDUPLICATION
+                     ↓
+                 TOKENIZATION
+                     ↓
+              TRAINING DATA
+                     ↓
+                PRETRAINING
+                     ↓
+       ┌─────────────┴─────────────┐
+       ↓                           ↓
+ Next-token objective        Loss calculation
+       ↓                           ↓
+       └─────────────┬─────────────┘
+                     ↓
+              BACKPROPAGATION
+                     ↓
+                 GRADIENTS
+                     ↓
+                OPTIMIZER
+                     ↓
+            PARAMETER UPDATES
+                     ↓
+                  REPEAT
+                     ↓
+              BASE MODEL
+                     ↓
+              FINE-TUNING
+                     ↓
+          PREFERENCE OPTIMIZATION
+                     ↓
+             DEPLOYED MODEL
+                     ↓
+                 INFERENCE
+                     ↓
+                  PROMPT
+                     ↓
+                TOKENIZATION
+                     ↓
+                TRANSFORMER
+                     ↓
+                  LOGITS
+                     ↓
+               NEXT TOKEN
+                     ↓
+                  REPEAT
+                     ↓
+                 RESPONSE
+```
+
+---
+
+# 127. Training in One Diagram
+
+Memorize this:
+
+```text
+                TRAINING
+
+              Training Data
+                    ↓
+                  Batch
+                    ↓
+              Forward Pass
+                    ↓
+               Prediction
+                    ↓
+                  Loss
+                    ↓
+             Backpropagation
+                    ↓
+                Gradients
+                    ↓
+                Optimizer
+                    ↓
+           Update Parameters
+                    ↓
+                 Repeat
+```
+
+---
+
+# 128. Inference in One Diagram
+
+Memorize this separately:
+
+```text
+                INFERENCE
+
+                  Prompt
+                    ↓
+                Tokenization
+                    ↓
+                  Model
+                    ↓
+                  Logits
+                    ↓
+             Probability scores
+                    ↓
+              Choose token
+                    ↓
+              Add token to context
+                    ↓
+              Predict next token
+                    ↓
+                  Repeat
+                    ↓
+                 Response
+```
+
+---
+
+# 129. Training vs Inference — The Simplest Explanation
+
+If someone asks:
+
+> "What is the difference between training and inference?"
+
+Say:
+
+> **Training is when the model's parameters are adjusted to improve predictions. Inference is when we use the already-trained parameters to generate predictions.**
+
+That one sentence is extremely important.
+
+---
+
+# 130. Day 4 Vocabulary
+
+## Neural Network
+
+A mathematical model made of connected layers of numerical transformations.
+
+## Neuron
+
+A basic mathematical computation unit.
+
+## Weight
+
+A learned numerical parameter.
+
+## Bias
+
+A learned numerical offset.
+
+## Parameter
+
+A value learned during training.
+
+## Hyperparameter
+
+A configuration selected by engineers.
+
+## Forward Pass
+
+Input flowing through the model to produce a prediction.
+
+## Prediction
+
+The model's current output/guess.
+
+## Target
+
+The correct training answer.
+
+## Loss
+
+A numerical measure of prediction error.
+
+## Gradient
+
+Information describing how loss changes with respect to parameters.
+
+## Backpropagation
+
+The process of calculating gradients through the network.
+
+## Optimizer
+
+An algorithm that uses gradients to update parameters.
+
+## Learning Rate
+
+Controls the size of parameter updates.
+
+## Batch
+
+A group of training examples processed together.
+
+## Step
+
+One training/update iteration.
+
+## Epoch
+
+Approximately one pass through the dataset.
+
+## Pretraining
+
+Large-scale initial model training.
+
+## Fine-Tuning
+
+Additional training to specialize a pretrained model.
+
+## SFT
+
+Supervised Fine-Tuning.
+
+## RLHF
+
+Reinforcement Learning from Human Feedback.
+
+## DPO
+
+Direct Preference Optimization.
+
+## Inference
+
+Using a trained model to generate predictions.
+
+## RAG
+
+Retrieval-Augmented Generation.
+
+## Quantization
+
+Representing model values using fewer bits.
+
+---
+
+# 131. The 10 Concepts You Must Know
+
+If you only study ten things today, study these:
+
+### 1. Parameter
+
+```text
+Learned number inside the model
+```
+
+### 2. Training
+
+```text
+Process of improving parameters
+```
+
+### 3. Prediction
+
+```text
+What the model currently thinks
+```
+
+### 4. Loss
+
+```text
+How wrong the prediction is
+```
+
+### 5. Gradient
+
+```text
+How parameters affect loss
+```
+
+### 6. Backpropagation
+
+```text
+Calculate gradients
+```
+
+### 7. Optimizer
+
+```text
+Use gradients to update parameters
+```
+
+### 8. Learning rate
+
+```text
+Size of update
+```
+
+### 9. Inference
+
+```text
+Use trained model
+```
+
+### 10. Fine-tuning vs RAG
+
+```text
+Fine-tuning → change model behavior/weights
+
+RAG → provide external information at runtime
+```
+
+---
+
+# 132. Beginner Interview Questions
+
+## Q1. What is a parameter?
+
+A parameter is a numerical value learned by the model during training.
+
+Examples:
+
+```text
+Weights
+Biases
+```
+
+---
+
+## Q2. What is a hyperparameter?
+
+A hyperparameter is a configuration chosen by engineers before/during training.
+
+Examples:
+
+```text
+Learning rate
+Batch size
+Optimizer
+```
+
+---
+
+## Q3. What is loss?
+
+Loss measures how far the model's prediction is from the desired target.
+
+---
+
+## Q4. What is backpropagation?
+
+Backpropagation calculates gradients that describe how the loss changes with respect to model parameters.
+
+---
+
+## Q5. What is gradient descent?
+
+An optimization approach that updates parameters in a direction intended to reduce loss.
+
+---
+
+## Q6. What is an optimizer?
+
+An algorithm that uses gradient information to update model parameters.
+
+---
+
+## Q7. What is a batch?
+
+A group of training examples processed together.
+
+---
+
+## Q8. What is an epoch?
+
+One approximate complete pass through the training dataset.
+
+---
+
+## Q9. What is fine-tuning?
+
+Additional training performed on a pretrained model to adapt it to a specific task, domain, behavior or format.
+
+---
+
+## Q10. What is RAG?
+
+A system architecture that retrieves external information and provides it to an LLM as context during generation.
+
+---
+
+# 133. Beginner Exercise 1
+
+Suppose:
+
+```text
+Input:
+2 + 3
+
+Model prediction:
+7
+
+Correct answer:
+5
+```
+
+Answer:
+
+### What is the prediction?
+
+```text
+7
+```
+
+### What is the target?
+
+```text
+5
+```
+
+### Is the model correct?
+
+```text
+No
+```
+
+### What measures the error?
+
+```text
+Loss
+```
+
+### What calculates parameter gradients?
+
+```text
+Backpropagation
+```
+
+### What updates the parameters?
+
+```text
+Optimizer
+```
+
+---
+
+# 134. Beginner Exercise 2
+
+Suppose:
+
+```text
+Input:
+The capital of France is
+
+Target:
+Paris
+```
+
+Model:
+
+```text
+Paris   → 95%
+London  → 2%
+Berlin  → 1%
+Other   → 2%
+```
+
+Is this a good prediction?
+
+Yes.
+
+Why?
+
+Because the correct target receives a high probability.
+
+Therefore the loss should generally be relatively low.
+
+---
+
+# 135. Beginner Exercise 3
+
+Suppose:
+
+```text
+Paris → 0.001%
+```
+
+and the target is:
+
+```text
+Paris
+```
+
+Is that good?
+
+No.
+
+The model assigned very little probability to the correct target.
+
+The loss should therefore be much higher than in the previous example.
+
+---
+
+# 136. Beginner Exercise 4
+
+You have:
+
+```text
+100,000 documents
+```
+
+and they change every week.
+
+Should you immediately fine-tune the LLM every week?
+
+Not necessarily.
+
+A RAG system may be more appropriate:
+
+```text
+Documents
+ ↓
+Index
+ ↓
+Retrieve current information
+ ↓
+LLM
+```
+
+because the knowledge can be updated without changing the model weights.
+
+---
+
+# 137. Beginner Exercise 5
+
+You have a model that knows general English but repeatedly produces the wrong JSON format.
+
+Possible approaches:
+
+```text
+Prompt engineering
+Structured output mechanisms
+Fine-tuning
+```
+
+The best solution depends on the problem.
+
+This is an important engineering lesson:
+
+> **Do not fine-tune automatically. First identify whether the problem is instructions, knowledge, behavior, tooling or model capability.**
+
+---
+
+# 138. The Most Important Engineering Lesson
+
+When an AI system doesn't work, don't immediately say:
+
+> "We need a bigger model."
+
+Instead ask:
+
+```text
+Is the problem:
+
+1. Prompt?
+2. Context?
+3. Missing knowledge?
+4. Retrieval?
+5. Tool?
+6. Model capability?
+7. Fine-tuning?
+8. Evaluation?
+9. Output validation?
+10. Infrastructure?
+```
+
+This mindset is extremely important for AI engineering.
+
+---
+
+# 139. Day 4 Final Summary
+
+The entire lesson can be reduced to:
+
+```text
+DATA
+ ↓
+MODEL
+ ↓
+PREDICTION
+ ↓
+LOSS
+ ↓
+BACKPROPAGATION
+ ↓
+GRADIENTS
+ ↓
+OPTIMIZER
+ ↓
+PARAMETER UPDATE
+ ↓
+REPEAT
+ ↓
+TRAINED MODEL
+```
+
+For an LLM:
+
+```text
+TEXT
+ ↓
+TOKENS
+ ↓
+NEXT-TOKEN PREDICTION
+ ↓
+LOSS
+ ↓
+BACKPROPAGATION
+ ↓
+PARAMETER UPDATES
+ ↓
+REPEAT
+ ↓
+LLM
+```
+
+Then during inference:
+
+```text
+USER PROMPT
+ ↓
+TOKENS
+ ↓
+LLM
+ ↓
+NEXT TOKEN
+ ↓
+NEXT TOKEN
+ ↓
+NEXT TOKEN
+ ↓
+...
+ ↓
+ANSWER
+```
+
+And in an enterprise AI application:
+
+```text
+USER
+ ↓
+APPLICATION
+ ↓
+RETRIEVAL / TOOLS / MEMORY
+ ↓
+CONTEXT
+ ↓
+LLM
+ ↓
+VALIDATION
+ ↓
+APPLICATION
+ ↓
+USER
+```
+
+---
+
+# 140. The One Answer You Should Be Able to Give After Day 4
+
+If an interviewer asks:
+
+> **"Explain how an LLM learns."**
+
+A good fresher-level answer is:
+
+> An LLM is a large neural network containing many learned numerical parameters. During training, it receives token sequences and tries to predict the next token. The prediction is compared with the correct target using a loss function. Backpropagation calculates gradients that show how the model's parameters contributed to the loss. An optimizer uses these gradients to update the parameters. This process is repeated over very large amounts of data and many training steps, gradually improving the model's predictions. After training, the model can be used for inference, where the learned parameters are generally kept fixed and the model generates output one token at a time.
+
+If you can explain that clearly, you understand the core of Day 4.
+
+---
+
+# 141. Day 4 → Day 5 Connection
+
+You now understand:
+
+```text
+What parameters are
+What training is
+What loss is
+What gradients are
+What backpropagation is
+What optimizers do
+What inference is
+What fine-tuning is
+What RAG is
+```
+
+Now we can ask the next engineering question:
+
+> **How big is this model, and what hardware do I need to run it?**
+
+That leads directly into:
+
+```text
+7B / 13B / 70B
+        ↓
+Parameters
+        ↓
+FP32 / FP16 / BF16
+        ↓
+Memory requirements
+        ↓
+GPU VRAM
+        ↓
+Quantization
+        ↓
+INT8 / INT4
+        ↓
+Model loading
+        ↓
+Inference
+        ↓
+Tokens/sec
+        ↓
+Latency
+        ↓
+Throughput
+        ↓
+KV Cache
+        ↓
+CPU vs GPU
+        ↓
+Local LLMs
+```
+
+That will be **Day 5: How Much Hardware Does an LLM Need?**
