@@ -1,10 +1,4 @@
 # Day 4 — How Does an LLM Learn?
-## Extremely Detailed Beginner Guide for an Engineering Student
-
-> **Target:** Engineering student who knows basic programming but has little or no AI/ML knowledge.
->
-> **Goal:** By the end of Day 4, you should be able to explain how a neural network learns, how an LLM is trained, what parameters/loss/gradients/backpropagation/optimizers are, and how training differs from inference, fine-tuning and RAG.
-
 ---
 
 # 1. First: What Are We Actually Trying to Understand?
